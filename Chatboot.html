@@ -4,68 +4,64 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MC Pupusas - Chatbot</title>
+  <link rel="stylesheet" href="chatboot.css">
 </head>
 
 <body>
   <!-- Barra superior de la pagina -->
-  <header>
+  <header class="topbar">
     <!-- Logo o nombre de la marca -->
-    <div>
+    <div class="logo">
       <p>MC</p>
       <h1>PUPUSAS</h1>
     </div>
 
     <!-- Menu de navegacion -->
-    <nav>
+    <nav class="nav">
       <ul>
-        <li><a href="#">moma</a></li>
-        <li><a href="#">moma</a></li>
-        <li><a href="#">moma</a></li>
+        <li><a href="#">Inicio</a></li>
+        <li><a href="#">Quienes Somos?</a></li>
+        <li><a href="#">Consulta Aqui</a></li>
       </ul>
     </nav>
   </header>
 
   <!-- Contenido principal -->
-  <main>
+  <main class="page">
     <!-- Columna izquierda: espacio para el chatbot -->
-    <section>
-      <!-- Area donde apareceran los mensajes del chat -->
-      <div>
+    <section class="chat-card">
+      <div class="chat-box">
         <!-- Aqui ira el historial de mensajes del usuario y del bot -->
       </div>
 
-      <!-- Area inferior del chat: campo de escritura y boton -->
-      <form>
+      <form class="chat-form">
         <input type="text" placeholder="Escribe aqui...">
         <button type="submit">Enviar</button>
       </form>
     </section>
 
     <!-- Columna derecha: decoracion y promociones -->
-    <aside>
-      <!-- Titulo llamativo -->
-      <section>
+    <aside class="promo-column">
+      <section class="title-banner">
         <h2>CONSULTA AQUI!</h2>
       </section>
 
-      <!-- Etiqueta de promociones -->
-      <section>
+      <section class="promo-label">
         <h3>PROMOCIONES!</h3>
       </section>
 
-      <!-- Espacio reservado para imagen promocional -->
-      <section>
-        <!-- Aqui se colocara una imagen de pupusas o promociones -->
+      <section class="image-placeholder wide-placeholder">
+        <img src="mcpupusas-2.png" alt="Plato de pupusas con salsa y curtido">
       </section>
 
-      <!-- Espacio reservado para personaje o arte decorativo -->
-      <section>
-        <!-- Aqui se colocara la mascota o personaje decorativo -->
-      </section>
+      <section class="image-row">
+        <div class="image-placeholder mascot-placeholder">
+          <img src="mcpupusin-v1.png" alt="Mascota de MC Pupusas">
+        </div>
 
-      <!-- Espacio reservado para otra imagen o decoracion -->
-      <section>
-        <!-- Aqui se colocara otra imagen decorativa -->
+        <div class="image-placeholder square-placeholder">
+          <img src="mcpupusas-1.png" alt="Pupusas con curtido">
+        </div>
       </section>
     </aside>
   </main>
