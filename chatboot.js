@@ -22,7 +22,7 @@ function getWelcomeMessage() {
         "- Ubicación\n" +
         "- Acompañamientos\n" +
         "- Costo de envío\n" +
-        "- Descuentos para eventos\n" +
+        "- descuentos para momas\n" +
         "- Estado de pedido\n" +
         "- Antojos típicos\n" +
         "- Bebidas\n" +
