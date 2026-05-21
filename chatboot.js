@@ -15,7 +15,7 @@ function getWelcomeMessage() {
         "Puedes preguntarme sobre:\n" +
         "- Menú de hoy\n" +
         "- Promociones disponibles\n" +
-        "- Entregas a domicilio\n" +
+        "- entregas a momacilio\n" +
         "- Tiempo de entrega\n" +
         "- Horario del restaurante\n" +
         "- Formas de pago\n" +
