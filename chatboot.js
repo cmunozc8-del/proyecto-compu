@@ -1,5 +1,6 @@
 window.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('send-btn').addEventListener('click', function() {
+    document.getElementById('chat-form').addEventListener('submit', function(e) {
+        e.preventDefault();
         sendMessage();
     });
 
