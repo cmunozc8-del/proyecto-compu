@@ -240,15 +240,26 @@ a {
 }
 
 .chat-bubble {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  z-index: 4;
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 20;
+  display: block;
   width: clamp(72px, 6vw, 98px);
   aspect-ratio: 1;
   border: 6px solid #000;
   border-radius: 50%;
   background: #fff;
+  box-shadow: 0 10px 0 #000;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-bubble:hover,
+.chat-bubble:focus-visible {
+  background: #70d84b;
+  transform: translateY(-4px);
+  box-shadow: 0 14px 0 #000;
+  outline: none;
 }
 
 .section-inner {
@@ -506,5 +517,7 @@ a {
 
   .chat-bubble {
     border-width: 5px;
+    right: 18px;
+    bottom: 18px;
   }
 }
