@@ -206,7 +206,6 @@ body {
 /* Recuadros vacios donde despues iran imagenes reales */
 .image-placeholder {
   background-color: transparent;
-  border: 3px dashed #000000;
   border-radius: 18px;
 }
 
