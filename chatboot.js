@@ -22,7 +22,16 @@ window.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('cancel-customer-modal').addEventListener('click', function() {
                 closeCustomerModal();
-                displayMessage("Puedes confirmar el pedido cuando estés listo o escribir cancelar.", "bot");
+                displayMessage("Puedes confirmar el pedido cuando estes listo o escribir cancelar.", "bot");
+            });
+
+            document.getElementById('delivery-map-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitDeliveryMapSearch();
+            });
+
+            document.getElementById('cancel-delivery-map-modal').addEventListener('click', function() {
+                closeDeliveryMapModal();
             });
 
             document.getElementById('card-form').addEventListener('submit', function(e) {
@@ -36,7 +45,6 @@ window.addEventListener('DOMContentLoaded', function() {
             });
 
             setupCardPreview();
-
             showWelcomeMessage();
         });
 
@@ -49,19 +57,19 @@ window.addEventListener('DOMContentLoaded', function() {
 
         const orderCatalog = [
             { name: "Combo Buen Provecho", price: 22, aliases: ["combo buen provecho", "buen provecho"] },
-            { name: "Combo El Tragón", price: 30, aliases: ["combo el tragon", "el tragon", "tragon"] },
+            { name: "Combo El Tragon", price: 30, aliases: ["combo el tragon", "el tragon", "tragon"] },
             { name: "Combo Familiar", price: 110, aliases: ["combo familiar", "familiar"] },
-            { name: "Menú Infantil", price: 25, aliases: ["menu infantil", "infantil", "macpupusin"] },
+            { name: "Menu Infantil", price: 25, aliases: ["menu infantil", "infantil", "macpupusin"] },
             { name: "Loroco con queso", price: 11, aliases: ["loroco", "loroco con queso"] },
-            { name: "Chicharrón", price: 10, aliases: ["chicharron"] },
+            { name: "Chicharron", price: 10, aliases: ["chicharron"] },
             { name: "Mixtas", price: 12, aliases: ["mixtas", "mixta"] },
             { name: "Queso", price: 8, aliases: ["queso"] },
             { name: "Gaseosa en lata", price: 6, aliases: ["gaseosa", "lata"] },
             { name: "Horchata", price: 8, aliases: ["horchata"] },
             { name: "Jamaica", price: 8, aliases: ["jamaica"] },
             { name: "Tamarindo", price: 8, aliases: ["tamarindo"] },
-            { name: "Café", price: 5, aliases: ["cafe"] },
-            { name: "Agua pura", price: 4, aliases: ["agua"], exactMatchOnly: true }
+            { name: "Cafe", price: 5, aliases: ["cafe"] },
+            { name: "Agua pura", price: 4, aliases: ["agua", "agua pura"], exactMatchOnly: true }
         ];
 
         let currentOrder = {
@@ -77,68 +85,84 @@ window.addEventListener('DOMContentLoaded', function() {
 
         let completedOrder = null;
 
+        const BOT_RESPONSE_DELAY_MS = 850;
+        const DELIVERY_MODAL_AFTER_RESPONSE_MS = 3000;
+        const DELIVERY_INTRO_MESSAGE = "Asi es, hacemos pedidos a domicilio, solo brindanos tu direccion y te dare el tiempo estimado y el precio de envio";
+        const NO_ORDER_DELIVERY_TIME_MESSAGE = "no tenemos ningun pedido registrado, brindame el numero de pedido o realiza uno para poder brindarte el aproximado de entrega segun tu direccion";
+
         function getWelcomeMessage() {
-            return "¡Hola! Bienvenido a nuestro restaurante de pupusas.\n\n" +
+            return "Hola. Bienvenido a MacPUPUSAS.\n\n" +
                 "Puedes preguntarme sobre:\n" +
-                "- Menú y precios\n" +
+                "- Menu y precios\n" +
+                "- Combos disponibles\n" +
                 "- Promociones disponibles\n" +
                 "- Entregas a domicilio\n" +
                 "- Tiempo de entrega\n" +
                 "- Horario del restaurante\n" +
                 "- Formas de pago\n" +
-                "- Ubicación\n" +
-                "- Acompañamientos\n" +
+                "- Ubicacion\n" +
+                "- Acompanamientos\n" +
                 "- Registrar pedido\n" +
-                "- Costo de envío\n" +
+                "- Costo de envio\n" +
                 "- Descuentos para eventos\n" +
                 "- Estado de pedido\n" +
-                "- Antojos típicos\n" +
-                "- Bebidas\n" +
-                "- Preparación\n" +
-                "- Sucursales";
+                "- Bebidas";
         }
 
         function getUnknownMessage() {
-            return "Lo lamento, no entendi tu pregunta, pero con gusto puedes elegir una de estas opciones, Estamos para servirte\n\n" +
+            return "Lo lamento, no entendi tu pregunta, pero con gusto puedes elegir una de estas opciones. Estamos para servirte.\n\n" +
                 "Puedes preguntarme sobre:\n" +
-                "- Menú y precios\n" +
+                "- Menu y precios\n" +
+                "- Combos disponibles\n" +
                 "- Promociones disponibles\n" +
                 "- Entregas a domicilio\n" +
                 "- Tiempo de entrega\n" +
                 "- Horario del restaurante\n" +
                 "- Formas de pago\n" +
-                "- Ubicación\n" +
-                "- Acompañamientos\n" +
+                "- Ubicacion\n" +
+                "- Acompanamientos\n" +
                 "- Registrar pedido\n" +
-                "- Costo de envío\n" +
-                "- Descuentos para eventos\n" +
-                "- Estado de pedido\n" +
-                "- Antojos típicos\n" +
-                "- Bebidas\n" +
-                "- Preparación\n" +
-                "- Sucursales";
+                "- Costo de envio\n" +
+                "- Bebidas";
         }
 
         function getMenuMessage() {
-            return "Menú de pupusas:\n" +
+            return "Menu de pupusas:\n" +
                 "- Queso: Q8\n" +
-                "- Chicharrón: Q10\n" +
+                "- Chicharron: Q10\n" +
                 "- Mixtas: Q12\n" +
                 "- Loroco con queso: Q11\n\n" +
-                "Combos:\n" +
-                "- Combo Buen Provecho: 2 pupusas + bebida por Q22\n\n" +
-                "- Combo El Tragón: 3 pupusas + bebida por Q30\n\n" +
-                "- Combo Familiar: 10 pupusas + 4 bebidas por Q110\n\n" +
-                "Menú Infantil:\n" +
-                "- 2 mini pupusas de queso o frijol con queso\n" +
-                "- Jugo de naranja\n" +
-                "- Juguete de MacPupusin\n" +
-                "Precio: Q25\n\n" +
-                "Si deseas ver el menú de bebidas solo escribe \"bebidas\".";
+                "Tambien puedes escribir \"combos\" para ver combos o \"bebidas\" para ver bebidas.";
+        }
+
+        function getCombosMessage() {
+            return "Combos disponibles:\n" +
+                "- Combo Buen Provecho: 2 pupusas + bebida por Q22\n" +
+                "- Combo El Tragon: 3 pupusas + bebida por Q30\n" +
+                "- Combo Familiar: 10 pupusas + 4 bebidas por Q110\n" +
+                "- Menu Infantil: 2 mini pupusas, jugo de naranja y juguete de MacPupusin por Q25.";
+        }
+
+        function getPromotionsMessage() {
+            return "Promociones disponibles:\n" +
+                "- Martes Pupusero: paga 2 pupusas y recibe la tercera gratis.\n" +
+                "- Envio gratis en pedidos mayores a Q80 dentro del area de cobertura.\n" +
+                "- Por la compra de 6 pupusas o mas, recibe una bebida natural gratis.\n" +
+                "- Pedidos mayores a 25 pupusas tienen descuento especial.\n" +
+                "- Cliente frecuente: en tu quinto pedido recibes una bebida gratis o 15% de descuento.\n" +
+                "- Hora feliz: de 3:00 p.m. a 5:00 p.m., bebidas naturales a Q6.";
+        }
+
+        function getOrderStartMenuMessage() {
+            return "Menu de pupusas:\n" +
+                "- Queso: Q8\n" +
+                "- Chicharron: Q10\n" +
+                "- Mixtas: Q12\n" +
+                "- Loroco con queso: Q11";
         }
 
         function getKidsMenuMessage() {
-            return "Menú Infantil:\n" +
+            return "Menu Infantil:\n" +
                 "- 2 mini pupusas de queso o frijol con queso\n" +
                 "- Jugo de naranja\n" +
                 "- Juguete de MacPupusin\n\n" +
@@ -146,13 +170,13 @@ window.addEventListener('DOMContentLoaded', function() {
         }
 
         function getBeveragesMessage() {
-            return "Menú de bebidas:\n" +
+            return "Menu de bebidas:\n" +
                 "- Gaseosa en lata: Q6\n" +
                 "- Agua pura: Q4\n" +
                 "- Horchata: Q8\n" +
                 "- Jamaica: Q8\n" +
                 "- Tamarindo: Q8\n" +
-                "- Café: Q5";
+                "- Cafe: Q5";
         }
 
         function isOrderStart(mensaje) {
@@ -165,6 +189,55 @@ window.addEventListener('DOMContentLoaded', function() {
                 mensaje.includes("quiero ordenar") ||
                 mensaje.includes("ordenar") ||
                 mensaje.includes("comprar");
+        }
+
+        function isDeliveryTimeQuestion(mensaje) {
+            return mensaje.includes("tiempo de entrega") ||
+                mensaje.includes("cuanto tarda") ||
+                mensaje.includes("cuanto demora") ||
+                mensaje.includes("cuando llega") ||
+                mensaje.includes("aproximado de entrega");
+        }
+
+        function isDeliveryAddressRequest(mensaje) {
+            return mensaje.includes("entregas a domicilio") ||
+                mensaje.includes("pedido a domicilio") ||
+                mensaje.includes("pedidos a domicilio") ||
+                mensaje.includes("hacen pedidos a domicilio") ||
+                mensaje.includes("servicio a domicilio") ||
+                mensaje.includes("domicilio") ||
+                mensaje.includes("delivery") ||
+                mensaje.includes("envio");
+        }
+
+        function scheduleDeliveryMapModal() {
+            setTimeout(function() {
+                openDeliveryMapModal();
+            }, BOT_RESPONSE_DELAY_MS + DELIVERY_MODAL_AFTER_RESPONSE_MS);
+        }
+
+        function isBlockedDuringOrderQuestion(mensaje) {
+            return mensaje === "combos" ||
+                mensaje.includes("ver combos") ||
+                mensaje.includes("promocion") ||
+                mensaje.includes("promociones") ||
+                mensaje.includes("oferta") ||
+                mensaje.includes("descuento") ||
+                mensaje.includes("horario") ||
+                mensaje.includes("abiertos") ||
+                mensaje.includes("ubicacion") ||
+                mensaje.includes("ubicados") ||
+                mensaje.includes("donde estan") ||
+                mensaje.includes("pago") ||
+                mensaje.includes("pagar") ||
+                mensaje.includes("tarjeta") ||
+                isDeliveryTimeQuestion(mensaje) ||
+                isDeliveryAddressRequest(mensaje);
+        }
+
+        function getBlockedDuringOrderMessage() {
+            return "Ahora mismo estamos registrando tu pedido. Para consultar otras opciones como promociones, horario, pagos o domicilio, primero escribe \"cancelar\" para salir del pedido.\n\n" +
+                "Si deseas continuar, escribe productos del menu, \"ver pedido\", \"confirmar\" o \"cancelar\".";
         }
 
         function resetOrder() {
@@ -184,13 +257,13 @@ window.addEventListener('DOMContentLoaded', function() {
             resetOrder();
             currentOrder.active = true;
 
-            return "Perfecto, ¿qué deseas ordenar?\n\n" +
-                getMenuMessage() + "\n\n" +
+            return "Perfecto, que deseas ordenar?\n\n" +
+                getOrderStartMenuMessage() + "\n\n" +
                 "Puedes escribir uno o varios productos con cantidad.\n\n" +
                 "Ejemplos:\n" +
                 "- 2 queso, 1 horchata\n" +
-                "- 1 combo buen provecho, 2 mixtas\n" +
-                "- 1 menu infantil, 1 jamaica";
+                "- 3 mixtas, 1 jamaica\n" +
+                "- 2 loroco con queso, 1 agua pura";
         }
 
         function findCatalogItem(fragment) {
@@ -280,7 +353,7 @@ window.addEventListener('DOMContentLoaded', function() {
             const targetOrder = order || currentOrder;
 
             if (targetOrder.items.length === 0) {
-                return "Tu pedido aún no tiene productos.";
+                return "Tu pedido aun no tiene productos.";
             }
 
             const itemLines = targetOrder.items.map(function(item) {
@@ -315,6 +388,74 @@ window.addEventListener('DOMContentLoaded', function() {
 
             errorElement.textContent = "";
             errorElement.classList.add('hidden');
+        }
+
+        function openDeliveryMapModal() {
+            clearDeliveryMapError();
+            document.getElementById('delivery-map-modal').classList.remove('hidden');
+            document.getElementById('delivery-address-input').focus();
+        }
+
+        function closeDeliveryMapModal() {
+            clearDeliveryMapError();
+            document.getElementById('delivery-map-modal').classList.add('hidden');
+        }
+
+        function showDeliveryMapError(message) {
+            const errorElement = document.getElementById('delivery-map-error');
+
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        function clearDeliveryMapError() {
+            const errorElement = document.getElementById('delivery-map-error');
+
+            errorElement.textContent = "";
+            errorElement.classList.add('hidden');
+        }
+
+        function submitDeliveryMapSearch() {
+            const addressInput = document.getElementById('delivery-address-input');
+            const address = addressInput.value.trim();
+
+            if (address === "") {
+                showDeliveryMapError("Por favor escribe una direccion para calcular el envio.");
+                return;
+            }
+
+            const deliveryEstimate = getRandomDeliveryEstimate();
+
+            closeDeliveryMapModal();
+            document.getElementById('delivery-map-form').reset();
+            displayMessage("Direccion para entrega:\n" + address, "user");
+            displayDeliveryEstimate(address, deliveryEstimate);
+        }
+
+        function getRandomDeliveryEstimate() {
+            return {
+                cost: Math.floor(10 + Math.random() * 11),
+                minutes: Math.floor(30 + Math.random() * 16)
+            };
+        }
+
+        function hasConfirmedOrder() {
+            return completedOrder && completedOrder.orderNumber;
+        }
+
+        function getConfirmedOrderStatusMessage() {
+            if (!hasConfirmedOrder()) {
+                return NO_ORDER_DELIVERY_TIME_MESSAGE;
+            }
+
+            return "Tu pedido ya esta registrado.\n\n" +
+                "Numero de pedido: " + completedOrder.orderNumber + "\n" +
+                "Estado: " + completedOrder.status + "\n" +
+                "Metodo de pago: " + completedOrder.paymentMethod + "\n" +
+                "Repartidor asignado: " + completedOrder.deliveryPerson + "\n" +
+                "Direccion: " + completedOrder.customer.address + "\n" +
+                "Costo de envio: Q" + completedOrder.deliveryEstimate.cost + "\n" +
+                "Tiempo estimado de llegada: " + completedOrder.deliveryEstimate.minutes + " minutos";
         }
 
         function openCardModal() {
@@ -463,7 +604,7 @@ window.addEventListener('DOMContentLoaded', function() {
             const cvv = document.getElementById('cvvInput').value.replace(/\D/g, '');
 
             if (cardNumber.length !== 16 || cardHolder === "" || !/^\d{2}\/\d{2}$/.test(expiry) || cvv.length !== 3) {
-                displayMessage("Por favor ingresa número de tarjeta de 16 dígitos, titular, fecha en formato MM/AA y CVV de 3 dígitos.", "bot");
+                displayMessage("Por favor ingresa numero de tarjeta de 16 digitos, titular, fecha en formato MM/AA y CVV de 3 digitos.", "bot");
                 return;
             }
 
@@ -479,9 +620,9 @@ window.addEventListener('DOMContentLoaded', function() {
                 "- Tipo: " + cardType + "\n" +
                 "- Banco: " + bankName + "\n" +
                 "- Titular: " + cardHolder + "\n" +
-                "- Terminación: **** " + lastDigits, "bot");
+                "- Terminacion: **** " + lastDigits, "bot");
 
-            displayDeliveryMessage("Tarjeta de débito/crédito");
+            displayDeliveryMessage("Tarjeta de debito/credito");
         }
 
         function submitCustomerData() {
@@ -491,7 +632,7 @@ window.addEventListener('DOMContentLoaded', function() {
             const phoneDigits = phone.replace(/\D/g, "");
 
             if (name === "" || phoneDigits.length < 8 || address === "") {
-                showCustomerFormError("Por favor completa nombre, teléfono válido y dirección.");
+                showCustomerFormError("Por favor completa nombre, telefono valido y direccion.");
                 return;
             }
 
@@ -500,6 +641,7 @@ window.addEventListener('DOMContentLoaded', function() {
             currentOrder.customer.name = name;
             currentOrder.customer.phone = phone;
             currentOrder.customer.address = address;
+            const deliveryEstimate = getRandomDeliveryEstimate();
 
             completedOrder = {
                 items: currentOrder.items.map(function(item) {
@@ -513,7 +655,8 @@ window.addEventListener('DOMContentLoaded', function() {
                     name: name,
                     phone: phone,
                     address: address
-                }
+                },
+                deliveryEstimate: deliveryEstimate
             };
 
             closeCustomerModal();
@@ -521,8 +664,10 @@ window.addEventListener('DOMContentLoaded', function() {
 
             displayMessage("Datos registrados:\n" +
                 "- Nombre: " + name + "\n" +
-                "- Teléfono: " + phone + "\n" +
-                "- Dirección: " + address + "\n\n" +
+                "- Telefono: " + phone + "\n" +
+                "- Direccion: " + address + "\n" +
+                "- Costo de envio: Q" + deliveryEstimate.cost + "\n" +
+                "- Tiempo estimado de llegada: " + deliveryEstimate.minutes + " minutos\n\n" +
                 getOrderSummary(completedOrder), "bot");
 
             displayPaymentOptions();
@@ -553,9 +698,9 @@ window.addEventListener('DOMContentLoaded', function() {
 
             cardButton.type = "button";
             cardButton.classList.add('secondary');
-            cardButton.textContent = "Tarjeta de débito/crédito";
+            cardButton.textContent = "Tarjeta de debito/credito";
             cardButton.addEventListener('click', function() {
-                displayMessage("Tarjeta de débito/crédito", "user");
+                displayMessage("Tarjeta de debito/credito", "user");
                 openCardModal();
             });
 
@@ -568,20 +713,23 @@ window.addEventListener('DOMContentLoaded', function() {
 
         function displayDeliveryMessage(paymentMethod) {
             if (!completedOrder) {
-                displayMessage("No encontré un pedido confirmado. Puedes iniciar uno escribiendo \"pedido\".", "bot");
+                displayMessage("No encontre un pedido confirmado. Puedes iniciar uno escribiendo \"pedido\".", "bot");
                 return;
             }
 
-            const deliveryPeople = ["Carlos Méndez", "Andrea López", "Luis Ramírez", "María González", "José Hernández"];
-            const deliveryPerson = deliveryPeople[Math.floor(Math.random() * deliveryPeople.length)];
-            const orderNumber = Math.floor(10000 + Math.random() * 90000);
-            const deliveryTime = Math.floor(30 + Math.random() * 16);
+            const deliveryPeople = ["Carlos Mendez", "Andrea Lopez", "Luis Ramirez", "Maria Gonzalez", "Jose Hernandez"];
+            completedOrder.deliveryPerson = deliveryPeople[Math.floor(Math.random() * deliveryPeople.length)];
+            completedOrder.orderNumber = Math.floor(10000 + Math.random() * 90000);
+            completedOrder.deliveryEstimate = completedOrder.deliveryEstimate || getRandomDeliveryEstimate();
+            completedOrder.paymentMethod = paymentMethod;
+            completedOrder.status = "Confirmado";
 
             displayMessage("Pedido confirmado.\n\n" +
-                "Número de pedido: " + orderNumber + "\n" +
-                "Método de pago: " + paymentMethod + "\n" +
-                "Repartidor asignado: " + deliveryPerson + "\n" +
-                "Tiempo estimado de llegada: " + deliveryTime + " minutos\n\n" +
+                "Numero de pedido: " + completedOrder.orderNumber + "\n" +
+                "Metodo de pago: " + completedOrder.paymentMethod + "\n" +
+                "Repartidor asignado: " + completedOrder.deliveryPerson + "\n" +
+                "Costo de envio: Q" + completedOrder.deliveryEstimate.cost + "\n" +
+                "Tiempo estimado de llegada: " + completedOrder.deliveryEstimate.minutes + " minutos\n\n" +
                 "Resumen:\n" +
                 getOrderSummary(completedOrder) + "\n\n" +
                 "Gracias por tu compra. Estamos para servirte.", "bot");
@@ -604,22 +752,26 @@ window.addEventListener('DOMContentLoaded', function() {
                 return getBeveragesMessage() + "\n\nPuedes seguir agregando bebidas a tu pedido.";
             }
 
+            if (isBlockedDuringOrderQuestion(mensaje)) {
+                return getBlockedDuringOrderMessage();
+            }
+
             if (mensaje.includes("ver pedido") || mensaje.includes("resumen") || mensaje.includes("total")) {
-                return getOrderSummary() + "\n\n¿Confirmar pedido? Escribe \"confirmar\" para continuar o \"cancelar\" para cancelar.";
+                return getOrderSummary() + "\n\nConfirmar pedido? Escribe \"confirmar\" para continuar o \"cancelar\" para cancelar.";
             }
 
             if (currentOrder.step === "items") {
-                if (mensaje.includes("confirmar") || mensaje === "si" || mensaje === "sí" || mensaje.includes("finalizar") || mensaje === "listo") {
+                if (mensaje.includes("confirmar") || mensaje === "si" || mensaje.includes("finalizar") || mensaje === "listo") {
                     if (currentOrder.items.length === 0) {
-                        return "Aún no has agregado productos. Escribe algo como: 2 queso, 1 horchata.";
+                        return "Aun no has agregado productos. Escribe algo como: 2 queso, 1 horchata.";
                     }
 
                     currentOrder.step = "customer";
                     setTimeout(function() {
                         openCustomerModal();
-                    }, 1100);
+                    }, 700);
 
-                    return "Perfecto, abriré un recuadro para registrar tu nombre completo, número de teléfono y dirección.";
+                    return "Perfecto, abrire un recuadro para registrar tu nombre completo, numero de telefono y direccion.";
                 }
 
                 const items = parseOrderItems(userInput);
@@ -629,11 +781,11 @@ window.addEventListener('DOMContentLoaded', function() {
                         "Escribe algo como:\n" +
                         "- 2 queso, 1 horchata\n" +
                         "- 1 combo familiar, 2 jamaica\n\n" +
-                        "También puedes escribir \"menu\" para ver opciones o \"cancelar pedido\".";
+                        "Tambien puedes escribir \"menu\", \"bebidas\" o \"cancelar pedido\".";
                 }
 
                 addItemsToOrder(items);
-                return getOrderSummary() + "\n\n¿Confirmar pedido? Escribe \"confirmar\" para continuar o \"cancelar\" para cancelar.";
+                return getOrderSummary() + "\n\nConfirmar pedido? Escribe \"confirmar\" para continuar o \"cancelar\" para cancelar.";
             }
 
             if (currentOrder.step === "customer") {
@@ -645,7 +797,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
 
             resetOrder();
-            return "Ocurrió un problema con el pedido. Puedes iniciar uno nuevo escribiendo \"pedido\".";
+            return "Ocurrio un problema con el pedido. Puedes iniciar uno nuevo escribiendo \"pedido\".";
         }
 
         function isGreeting(mensaje) {
@@ -694,6 +846,50 @@ window.addEventListener('DOMContentLoaded', function() {
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        function displayDeliveryEstimate(address, deliveryEstimate) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElement = document.createElement('div');
+            const estimateElement = document.createElement('div');
+
+            messageElement.classList.add('message', 'bot');
+            messageElement.textContent = "Listo. Con esta direccion calculamos una estimacion de entrega:";
+
+            estimateElement.classList.add('delivery-estimate');
+            estimateElement.textContent = "Direccion: " + address + "\n" +
+                "Costo de envio: Q" + deliveryEstimate.cost + "\n" +
+                "Tiempo estimado de llegada: " + deliveryEstimate.minutes + " minutos";
+
+            messageElement.appendChild(estimateElement);
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatBox = document.getElementById('chat-box');
+            const messageElement = document.createElement('div');
+            const dotsElement = document.createElement('div');
+
+            messageElement.classList.add('message', 'bot', 'typing-message');
+            dotsElement.classList.add('typing-indicator');
+            dotsElement.setAttribute('aria-label', 'El chatbot esta escribiendo');
+
+            for (let i = 0; i < 3; i++) {
+                dotsElement.appendChild(document.createElement('span'));
+            }
+
+            messageElement.appendChild(dotsElement);
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            return messageElement;
+        }
+
+        function removeTypingIndicator(typingElement) {
+            if (typingElement && typingElement.parentNode) {
+                typingElement.parentNode.removeChild(typingElement);
+            }
+        }
+
         function getBotResponse(userInput) {
             const mensaje = normalizeMessage(userInput);
             let botResponse = "";
@@ -713,57 +909,67 @@ window.addEventListener('DOMContentLoaded', function() {
             else if (mensaje.includes("menu") || mensaje.includes("precios") || mensaje.includes("pupusas")) {
                 botResponse = getMenuMessage();
             }
-            else if (mensaje.includes("promocion") || mensaje.includes("promociones") || mensaje.includes("combos")) {
-                botResponse = "Tenemos estos combos disponibles:\n\n" +
-                    "- Combo Buen Provecho: 2 pupusas + bebida por Q22\n\n" +
-                    "- Combo El Tragón: 3 pupusas + bebida por Q30\n\n" +
-                    "- Combo Familiar: 10 pupusas + 4 bebidas por Q110\n\n" +
-                    "- Menú Infantil: 2 mini pupusas, jugo de naranja y juguete de MacPupusin por Q25.";
+            else if (mensaje.includes("combo") || mensaje.includes("combos")) {
+                botResponse = getCombosMessage();
+            }
+            else if (mensaje.includes("promocion") || mensaje.includes("promociones") || mensaje.includes("oferta") || mensaje.includes("ofertas") || mensaje.includes("descuento")) {
+                botResponse = getPromotionsMessage();
             }
             else if (mensaje.includes("infantil") || mensaje.includes("nino") || mensaje.includes("ninos") || mensaje.includes("macpupusin")) {
                 botResponse = getKidsMenuMessage();
             }
-            else if (mensaje.includes("cobran") || mensaje.includes("envio") || mensaje.includes("servicio a domicilio")) {
-                botResponse = "El costo del envío varía según tu ubicación, usualmente está entre Q. 10.00 y Q. 20.00. Al compartirnos tu ubicación exacta, el sistema calculará el costo automáticamente.";
+            else if (isDeliveryTimeQuestion(mensaje)) {
+                botResponse = getConfirmedOrderStatusMessage();
             }
-            else if (mensaje.includes("entrega") || mensaje.includes("domicilio") || mensaje.includes("delivery")) {
-                botResponse = "Sí, hacemos entregas a domicilio en zonas cercanas. Solo comparte tu ubicación para verificar cobertura.";
+            else if (mensaje.includes("cobran") || isDeliveryAddressRequest(mensaje)) {
+                scheduleDeliveryMapModal();
+
+                botResponse = DELIVERY_INTRO_MESSAGE;
             }
             else if (mensaje.includes("estado")) {
-                botResponse = "Puede consultar su orden en tiempo real escribiendo la palabra “Estado” seguida de tu número de pedido. También enviaremos una notificación cuando el repartidor esté en camino.";
-            }
-            else if (mensaje.includes("cuanto tarda") || mensaje.includes("tiempo de entrega")) {
-                botResponse = "El tiempo estimado de entrega es de 30 a 45 minutos, dependiendo de la ubicación y la cantidad de pedidos.";
+                botResponse = hasConfirmedOrder()
+                    ? getConfirmedOrderStatusMessage()
+                    : "Puedes consultar tu orden en tiempo real escribiendo la palabra \"Estado\" seguida de tu numero de pedido. Tambien enviaremos una notificacion cuando el repartidor este en camino.";
             }
             else if (mensaje.includes("horario") || mensaje.includes("abiertos")) {
-                botResponse = "Estamos abiertos todos los días de 10:00 a.m. a 10:00 p.m.";
+                botResponse = "Claro que si. En MacPUPUSAS te esperamos todos los dias de 10:00 a.m. a 10:00 p.m. Ven con hambre, que las pupusas salen calientitas y listas para alegrarte el dia.";
             }
             else if (mensaje.includes("tarjeta") || mensaje.includes("pagar") || mensaje.includes("pago")) {
-                botResponse = "Sí, aceptamos efectivo, tarjetas de crédito, débito y transferencias.";
+                botResponse = "Claro, en MacPUPUSAS queremos que pagues como te quede mas comodo.\n\n" +
+                    "Aceptamos:\n" +
+                    "- Efectivo al recibir tu pedido\n" +
+                    "- Tarjeta de debito o credito\n" +
+                    "- Transferencia bancaria\n" +
+                    "- Deposito bancario\n" +
+                    "- Pago movil o billetera digital, segun disponibilidad\n\n" +
+                    "Cuando confirmes tu pedido, te mostraremos las opciones disponibles para finalizarlo.";
             }
             else if (mensaje.includes("ubicados") || mensaje.includes("ubicacion") || mensaje.includes("donde estan")) {
-                botResponse = "Estamos ubicados en el centro comercial principal de la ciudad. También puedes pedir por delivery.";
+                botResponse = "Estamos ubicados en el centro comercial principal de la ciudad. Tambien puedes pedir por delivery.";
             }
             else if (mensaje.includes("acompanamientos") || mensaje.includes("salsas") || mensaje.includes("curtido") || mensaje.includes("aderezos")) {
-                botResponse = "¡Por supuesto! Todos nuestros menús van acompañados con sus respectivos aderezos. Si desea porciones extra, puede solicitarlas con un costo adicional de Q. 5.00.";
+                botResponse = "Todos nuestros menus van acompanados con sus respectivos aderezos. Si deseas porciones extra, puedes solicitarlas con un costo adicional de Q5.";
             }
-            else if (mensaje.includes("evento") || mensaje.includes("grande") || mensaje.includes("mayorista") || mensaje.includes("descuento")) {
-                botResponse = "¡Sí, para pedidos mayoristas aplicamos un descuento! Para pedidos mayores a 25 pupusas ofrecemos precios especiales.";
+            else if (mensaje.includes("evento") || mensaje.includes("grande") || mensaje.includes("mayorista")) {
+                botResponse = "Para eventos o pedidos mayoristas, consulta nuestras promociones. Los pedidos mayores a 25 pupusas tienen descuento especial.";
             }
             else if (mensaje.includes("antojos") || mensaje.includes("tipicos") || mensaje.includes("platanitos") || mensaje.includes("rellenitos") || mensaje.includes("atoles")) {
-                botResponse = "Sí, para acompañar tu pedido contamos con platanitos fritos con crema y frijoles, rellenitos o atoles como arroz con leche, atol de plátano, entre otros.";
+                botResponse = "Para acompanar tu pedido contamos con platanitos fritos con crema y frijoles, rellenitos y atoles como arroz con leche o atol de platano.";
             }
             else if (mensaje.includes("preparacion") || mensaje.includes("hechas") || mensaje.includes("momento") || mensaje.includes("preparadas") || mensaje.includes("frescas")) {
-                botResponse = "Todas nuestras pupusas se preparan al momento en que recibimos tu orden. Siempre disfrutarás de un producto fresco y recién salido de la plancha.";
+                botResponse = "Todas nuestras pupusas se preparan al momento en que recibimos tu orden. Siempre disfrutaras de un producto fresco y recien salido de la plancha.";
             }
             else if (mensaje.includes("sucursales") || mensaje.includes("pais")) {
-                botResponse = "Por el momento contamos con 58 sucursales abiertas y sirviendo ricas pupusas en todo el país. ¡Esperamos poder expandirnos más en un futuro para que puedas encontrarnos en cualquier lugar a donde vayas!";
+                botResponse = "Por el momento contamos con 58 sucursales abiertas y sirviendo pupusas en todo el pais.";
             }
             else {
                 botResponse = getUnknownMessage();
             }
 
+            const typingElement = showTypingIndicator();
+
             setTimeout(function() {
+                removeTypingIndicator(typingElement);
                 displayMessage(botResponse, "bot");
-            }, 1000);
+            }, BOT_RESPONSE_DELAY_MS);
         }
