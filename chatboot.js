@@ -258,7 +258,8 @@ window.addEventListener('DOMContentLoaded', function() {
             currentOrder.active = true;
 
             return "Perfecto, que deseas ordenar?\n\n" +
-                getOrderStartMenuMessage() + "\n\n" +
+                getMenuMessage() + "\n\n" +
+                getCombosMessage() + "\n\n" +
                 "Puedes escribir uno o varios productos con cantidad.\n\n" +
                 "Ejemplos:\n" +
                 "- 2 queso, 1 horchata\n" +
@@ -347,6 +348,13 @@ window.addEventListener('DOMContentLoaded', function() {
             return targetOrder.items.reduce(function(total, item) {
                 return total + (item.price * item.quantity);
             }, 0);
+        }
+
+        function getOrderGrandTotal(order) {
+            const targetOrder = order || currentOrder;
+            const deliveryCost = targetOrder.deliveryEstimate ? targetOrder.deliveryEstimate.cost : 0;
+
+            return getOrderTotal(targetOrder) + deliveryCost;
         }
 
         function getOrderSummary(order) {
@@ -680,6 +688,7 @@ window.addEventListener('DOMContentLoaded', function() {
             const optionsElement = document.createElement('div');
             const cashButton = document.createElement('button');
             const cardButton = document.createElement('button');
+            const transferButton = document.createElement('button');
 
             messageElement.classList.add('message', 'bot');
             messageElement.textContent = "METODOS DE PAGO";
@@ -690,8 +699,7 @@ window.addEventListener('DOMContentLoaded', function() {
             cashButton.classList.add('primary');
             cashButton.textContent = "Efectivo al momento de entrega";
             cashButton.addEventListener('click', function() {
-                cashButton.disabled = true;
-                cardButton.disabled = true;
+                disablePaymentButtons();
                 displayMessage("Efectivo al momento de entrega", "user");
                 displayDeliveryMessage("Efectivo al momento de entrega");
             });
@@ -704,11 +712,39 @@ window.addEventListener('DOMContentLoaded', function() {
                 openCardModal();
             });
 
+            transferButton.type = "button";
+            transferButton.classList.add('secondary');
+            transferButton.textContent = "Transferencia bancaria";
+            transferButton.addEventListener('click', function() {
+                disablePaymentButtons();
+                displayMessage("Transferencia bancaria", "user");
+                displayDeliveryMessage("Transferencia bancaria");
+            });
+
             optionsElement.appendChild(cashButton);
             optionsElement.appendChild(cardButton);
+            optionsElement.appendChild(transferButton);
             messageElement.appendChild(optionsElement);
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function getBankTransferInstructions(order) {
+            return "Datos para transferencia bancaria:\n" +
+                "- Banco: Banco Industrial\n" +
+                "- Tipo de cuenta: Monetaria\n" +
+                "- Numero de cuenta: 001-123456-7\n" +
+                "- Nombre de la cuenta: MacPUPUSAS, S.A.\n" +
+                "- NIT: 1234567-8\n" +
+                "- Monto a transferir: Q" + getOrderGrandTotal(order) + "\n" +
+                "- Referencia o concepto: Pedido #" + order.orderNumber + "\n\n" +
+                "Despues de realizar la transferencia, envia el comprobante con:\n" +
+                "- Nombre completo\n" +
+                "- Numero de pedido\n" +
+                "- Banco desde donde transferiste\n" +
+                "- Numero de autorizacion o transaccion\n" +
+                "- Ultimos 4 digitos de la cuenta origen, si aplica\n\n" +
+                "Puedes enviarlo al WhatsApp 4280-2479 o al correo pagos@macpupusas.test.";
         }
 
         function displayDeliveryMessage(paymentMethod) {
@@ -722,16 +758,28 @@ window.addEventListener('DOMContentLoaded', function() {
             completedOrder.orderNumber = Math.floor(10000 + Math.random() * 90000);
             completedOrder.deliveryEstimate = completedOrder.deliveryEstimate || getRandomDeliveryEstimate();
             completedOrder.paymentMethod = paymentMethod;
-            completedOrder.status = "Confirmado";
+            completedOrder.status = paymentMethod === "Transferencia bancaria"
+                ? "Pendiente de comprobante de transferencia"
+                : "Confirmado";
 
-            displayMessage("Pedido confirmado.\n\n" +
+            const paymentInstructions = paymentMethod === "Transferencia bancaria"
+                ? "\n\n" + getBankTransferInstructions(completedOrder)
+                : "";
+            const confirmationIntro = paymentMethod === "Transferencia bancaria"
+                ? "Pedido registrado. Queda pendiente validar la transferencia."
+                : "Pedido confirmado.";
+
+            displayMessage(confirmationIntro + "\n\n" +
                 "Numero de pedido: " + completedOrder.orderNumber + "\n" +
+                "Estado: " + completedOrder.status + "\n" +
                 "Metodo de pago: " + completedOrder.paymentMethod + "\n" +
                 "Repartidor asignado: " + completedOrder.deliveryPerson + "\n" +
                 "Costo de envio: Q" + completedOrder.deliveryEstimate.cost + "\n" +
                 "Tiempo estimado de llegada: " + completedOrder.deliveryEstimate.minutes + " minutos\n\n" +
                 "Resumen:\n" +
                 getOrderSummary(completedOrder) + "\n\n" +
+                "Total con envio: Q" + getOrderGrandTotal(completedOrder) +
+                paymentInstructions + "\n\n" +
                 "Gracias por tu compra. Estamos para servirte.", "bot");
         }
 
@@ -945,10 +993,10 @@ window.addEventListener('DOMContentLoaded', function() {
                     "Cuando confirmes tu pedido, te mostraremos las opciones disponibles para finalizarlo.";
             }
             else if (mensaje.includes("ubicados") || mensaje.includes("ubicacion") || mensaje.includes("donde estan")) {
-                botResponse = "Estamos ubicados en el centro comercial principal de la ciudad. Tambien puedes pedir por delivery.";
+                botResponse = "Nos encuentras en el local 110, segundo nivel de Metrocentro, zona 4 de Villa Nueva. Ven con hambre y buen animo, que en MacPUPUSAS estamos listos para recibirte con pupusas calientitas y una sonrisa.";
             }
             else if (mensaje.includes("acompanamientos") || mensaje.includes("salsas") || mensaje.includes("curtido") || mensaje.includes("aderezos")) {
-                botResponse = "Todos nuestros menus van acompanados con sus respectivos aderezos. Si deseas porciones extra, puedes solicitarlas con un costo adicional de Q5.";
+                botResponse = "Nuestras pupusas van acompanadas con curtido fresco y salsita roja de la casa, como debe ser. Tambien puedes pedir extras como curtido adicional, salsa picante, crema, frijolitos, aguacate o platanitos fritos para completar tu antojo.";
             }
             else if (mensaje.includes("evento") || mensaje.includes("grande") || mensaje.includes("mayorista")) {
                 botResponse = "Para eventos o pedidos mayoristas, consulta nuestras promociones. Los pedidos mayores a 25 pupusas tienen descuento especial.";
