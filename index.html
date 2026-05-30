@@ -4,18 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MC Pupusas | Inicio</title>
-  <link rel="stylesheet" href="inicio.css">
+  <link rel="stylesheet" href="inicio.css?v=11">
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="#inicio" aria-label="Ir al inicio">
-      <img src="assets/logo-mc-pupusas.png" alt="MC Pupusas">
-    </a>
+  <span class="brand-mc">MC</span>
+  <span class="brand-pupusas">Pupusas</span>
+</a>
 
     <nav class="main-nav" aria-label="Navegacion principal">
       <a href="#inicio">Inicio</a>
       <a href="#quienes-somos">¿Quienes somos?</a>
-      <a href="#consulta">Consulta aqui</a>
+      <a href="#menu">Menu</a>
     </nav>
   </header>
 
@@ -44,13 +45,13 @@
 
         <div class="hero-actions">
           <a class="button" href="Chatboot.html">Consulta aqui</a>
-          <a class="button" href="https://drive.google.com/file/d/PEGA_AQUI_EL_ID_DEL_PDF/view?usp=sharing" target="_blank" rel="noopener">Menu</a>
+          <a class="button" href="#menu">Menu</a>
         </div>
       </div>
 
       <div class="hero-collage" aria-label="Galeria de MC Pupusas">
         <img class="visual-collage" src="imagenes/Visual1.png" alt="....">
-        <a class="chat-bubble" href="Chatboot.html" aria-label="Abrir chatbot"></a>
+        <a class="chat-bubble" href="Chatboot.html" aria-label="Abrir chatbot"><img src="imagenes/chatbot-pupusin-transparent.png" alt="MacPupusin chatbot"></a>
       </div>
     </section>
 
@@ -88,30 +89,150 @@
       </div>
     </section>
 
-    <section class="consult checker-bg" id="consulta">
-      <div class="section-inner consult-inner">
-        <div>
-          <span class="eyebrow">Chatbot</span>
-          <h1>Consulta aqui</h1>
-          <p>
-            Este espacio queda preparado para conectar el chatbot del equipo.
-            Por ahora funciona como llamada principal hacia la consulta.
-          </p>
-        </div>
-
-        <div class="chat-preview" aria-label="Vista previa del chatbot">
-          <div class="chat-top">
-            <span></span>
-            <strong>MC Pupusas Bot</strong>
-          </div>
-          <p class="bot-message">Hola, ¿que pupusa se te antoja hoy?</p>
-          <div class="chat-options">
-            <a href="https://drive.google.com/file/d/PEGA_AQUI_EL_ID_DEL_PDF/view?usp=sharing" target="_blank" rel="noopener">Ver menu</a>
-            <button type="button">Hacer pedido</button>
-          </div>
-        </div>
+  <section class="consult checker-bg menu-section" id="menu">
+    <div class="section-inner menu-inner">
+      <div>
+        <span class="eyebrow">Especialidades</span>
+        <h1>Menu</h1>
+        <p>
+          Elige tus pupusas favoritas y acompanalas con curtido fresco,
+          salsa de la casa y bebidas para completar tu pedido.
+        </p>
       </div>
-    </section>
-  </main>
+
+    <div class="menu-windows" aria-label="Menu de MC Pupusas">
+      <article class="menu-window">
+        <div class="menu-window-top">
+          <span></span>
+          <strong>Queso</strong>
+        </div>
+        <p>Pupusa clasica con queso derretido.</p>
+        <small>Q8</small>
+      </article>
+
+      <article class="menu-window">
+        <div class="menu-window-top">
+          <span></span>
+          <strong>Chicharron</strong>
+        </div>
+        <p>Pupusa preparada con chicharron de la casa.</p>
+        <small>Q10</small>
+      </article>
+
+      <article class="menu-window">
+        <div class="menu-window-top">
+          <span></span>
+          <strong>Mixtas</strong>
+        </div>
+        <p>Combinacion de sabores tradicionales en una pupusa.</p>
+        <small>Q12</small>
+      </article>
+
+      <article class="menu-window">
+        <div class="menu-window-top">
+          <span></span>
+          <strong>Loroco con queso</strong>
+        </div>
+        <p>Loroco fresco mezclado con queso derretido.</p>
+        <small>Q11</small>
+      </article>
+    </div>
+
+    <div class="combo-section" aria-label="Combos disponibles">
+      <div class="combo-heading">
+        <span class="eyebrow">Promociones</span>
+        <h2>Combos disponibles</h2>
+      </div>
+
+      <div class="combo-grid">
+        <article class="combo-card">
+          <strong>Combo Buen Provecho</strong>
+          <p>2 pupusas + bebida</p>
+          <small>Q22</small>
+        </article>
+
+        <article class="combo-card">
+          <strong>Combo El Tragon</strong>
+          <p>3 pupusas + bebida</p>
+          <small>Q30</small>
+        </article>
+
+        <article class="combo-card">
+          <strong>Combo Familiar</strong>
+          <p>10 pupusas + 4 bebidas</p>
+          <small>Q110</small>
+        </article>
+
+        <article class="combo-card">
+          <strong>Menu Infantil</strong>
+          <p>2 mini pupusas, jugo de naranja y juguete de MacPupusin</p>
+          <small>Q25</small>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="promotions-page" id="promociones" aria-label="Promociones disponibles">
+  <div class="section-inner promotions-inner">
+    <div class="promotions-panel">
+      <div class="promotions-heading">
+        <span class="eyebrow">Ofertas</span>
+        <h1>Promociones disponibles</h1>
+        <p>Beneficios especiales para pedidos, clientes frecuentes y horas de antojo.</p>
+      </div>
+
+      <div class="promotions-list">
+        <article>
+          <strong>Martes Pupusero</strong>
+          <p>Paga 2 pupusas y recibe la tercera gratis.</p>
+        </article>
+
+        <article>
+          <strong>Envio gratis</strong>
+          <p>En pedidos mayores a Q80 dentro del area de cobertura.</p>
+        </article>
+
+        <article>
+          <strong>Bebida natural gratis</strong>
+          <p>Por la compra de 6 pupusas o mas, recibe una bebida natural gratis.</p>
+        </article>
+
+        <article>
+          <strong>Descuento especial</strong>
+          <p>Pedidos mayores a 25 pupusas tienen descuento especial.</p>
+        </article>
+
+        <article>
+          <strong>Cliente frecuente</strong>
+          <p>En tu quinto pedido recibes una bebida gratis o 15% de descuento.</p>
+        </article>
+
+        <article>
+          <strong>Hora feliz</strong>
+          <p>De 3:00 p.m. a 5:00 p.m., bebidas naturales a Q6.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <strong>MC Pupusas</strong>
+      <p>Siguenos en nuestras redes sociales.</p>
+    </div>
+
+    <div class="social-links" aria-label="Redes sociales">
+      <a href="#">Facebook</a>
+      <a href="#">Instagram</a>
+      <a href="#">TikTok</a>
+    </div>
+
+    <p class="copyright">© 2026 MC Pupusas. Todos los derechos reservados.</p>
+  </div>
+</footer>
 </body>
 </html>
