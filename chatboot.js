@@ -867,6 +867,31 @@ window.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        function getFarewellMessage() {
+            return "Gracias por visitar MacPUPUSAS. Que tu camino siga ligero, tu dia con buen sabor y que el antojo te traiga de vuelta pronto. Aqui te esperamos con pupusas calientitas, curtido fresco y salsita de la casa.";
+        }
+
+        function isFarewell(mensaje) {
+            const despedidas = [
+                "adios",
+                "hasta luego",
+                "hasta pronto",
+                "hasta manana",
+                "nos vemos",
+                "bye",
+                "chao",
+                "chau",
+                "me voy",
+                "ya me voy",
+                "me retiro",
+                "me despido"
+            ];
+
+            return despedidas.some(function(despedida) {
+                return mensaje.includes(despedida);
+            });
+        }
+
         function showWelcomeMessage() {
             displayMessage(getWelcomeMessage(), 'bot');
         }
@@ -942,7 +967,14 @@ window.addEventListener('DOMContentLoaded', function() {
             const mensaje = normalizeMessage(userInput);
             let botResponse = "";
 
-            if (currentOrder.active) {
+            if (isFarewell(mensaje)) {
+                resetOrder();
+                closeCustomerModal();
+                closeDeliveryMapModal();
+                closeCardModal();
+                botResponse = getFarewellMessage();
+            }
+            else if (currentOrder.active) {
                 botResponse = handleOrderFlow(userInput);
             }
             else if (isOrderStart(mensaje)) {
