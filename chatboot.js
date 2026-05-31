@@ -1,52 +1,119 @@
 window.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('send-btn').addEventListener('click', function() {
-                sendMessage();
-            });
+    var chatForm = document.getElementById('chat-form');
+    var userInput = document.getElementById('user-input');
+    var quickQuestionButtons = document.querySelectorAll('.quick-questions button');
+    var customerForm = document.getElementById('customer-form');
+    var cancelCustomerModal = document.getElementById('cancel-customer-modal');
+    var deliveryMapForm = document.getElementById('delivery-map-form');
+    var cancelDeliveryMapModal = document.getElementById('cancel-delivery-map-modal');
+    var cardForm = document.getElementById('card-form');
+    var cancelCardModal = document.getElementById('cancel-card-modal');
+    var cardReminder = document.getElementById('card-reminder');
+    var cardReminderTimer = null;
 
-            document.getElementById('user-input').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-
-            document.querySelectorAll('.quick-questions button').forEach(function(button) {
-                button.addEventListener('click', function() {
-                    sendMessage(button.dataset.question);
-                });
-            });
-
-            document.getElementById('customer-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitCustomerData();
-            });
-
-            document.getElementById('cancel-customer-modal').addEventListener('click', function() {
-                closeCustomerModal();
-                displayMessage("Puedes confirmar el pedido cuando estes listo o escribir cancelar.", "bot");
-            });
-
-            document.getElementById('delivery-map-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitDeliveryMapSearch();
-            });
-
-            document.getElementById('cancel-delivery-map-modal').addEventListener('click', function() {
-                closeDeliveryMapModal();
-            });
-
-            document.getElementById('card-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitCardPayment();
-            });
-
-            document.getElementById('cancel-card-modal').addEventListener('click', function() {
-                closeCardModal();
-                displayMessage("Pago con tarjeta cancelado. Puedes elegir efectivo o volver a intentar con tarjeta.", "bot");
-            });
-
-            setupCardPreview();
-            showWelcomeMessage();
+    if (chatForm) {
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            sendMessage();
         });
+    }
+
+    if (userInput) {
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    quickQuestionButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            sendMessage(button.dataset.question);
+        });
+    });
+
+    if (customerForm) {
+        customerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitCustomerData();
+        });
+    }
+
+    if (cancelCustomerModal) {
+        cancelCustomerModal.addEventListener('click', function() {
+            closeCustomerModal();
+            displayMessage("Puedes confirmar el pedido cuando estes listo o escribir cancelar.", "bot");
+        });
+    }
+
+    if (deliveryMapForm) {
+        deliveryMapForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitDeliveryMapSearch();
+        });
+    }
+
+    if (cancelDeliveryMapModal) {
+        cancelDeliveryMapModal.addEventListener('click', function() {
+            closeDeliveryMapModal();
+        });
+    }
+
+    if (cardForm) {
+        cardForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitCardPayment();
+        });
+    }
+
+    if (cancelCardModal) {
+        cancelCardModal.addEventListener('click', function() {
+            closeCardModal();
+            resetCardForm();
+            displayMessage("Pago con tarjeta cancelado. Puedes elegir efectivo o volver a intentar con tarjeta.", "bot");
+        });
+    }
+
+    if (typeof setupCardPreview === 'function') {
+        setupCardPreview();
+    }
+
+    showWelcomeMessage();
+
+    function showCardReminder() {
+        if (!cardReminder) {
+            return;
+        }
+
+        if (cardReminderTimer) {
+            clearTimeout(cardReminderTimer);
+            cardReminderTimer = null;
+        }
+
+        cardReminder.classList.remove('hidden');
+        cardReminderTimer = setTimeout(function() {
+            cardReminder.classList.add('hidden');
+            cardReminderTimer = null;
+        }, 10000);
+    }
+
+    function hideCardReminder() {
+        if (!cardReminder) {
+            return;
+        }
+
+        if (cardReminderTimer) {
+            clearTimeout(cardReminderTimer);
+            cardReminderTimer = null;
+        }
+
+        cardReminder.classList.add('hidden');
+    }
+
+    window.showCardReminder = showCardReminder;
+    window.hideCardReminder = hideCardReminder;
+});
 
         function normalizeMessage(text) {
             return text
@@ -199,15 +266,46 @@ window.addEventListener('DOMContentLoaded', function() {
                 mensaje.includes("aproximado de entrega");
         }
 
+        function isLocationQuestion(mensaje) {
+            return mensaje.includes("ubicacion") ||
+                mensaje.includes("ubicacion exacta") ||
+                mensaje.includes("ubicados") ||
+                mensaje.includes("donde estan") ||
+                mensaje.includes("donde esta") ||
+                mensaje.includes("donde quedan") ||
+                mensaje.includes("donde queda") ||
+                mensaje.includes("en que zona estan") ||
+                mensaje.includes("en que zona quedan") ||
+                mensaje.includes("en que zona estan ubicados") ||
+                mensaje.includes("direccion") ||
+                mensaje.includes("local") ||
+                mensaje.includes("sucursal") ||
+                mensaje.includes("como llegar") ||
+                mensaje.includes("referencia") ||
+                mensaje.includes("google maps") ||
+                mensaje.includes("mapa") ||
+                mensaje.includes("mapas") ||
+                mensaje.includes("cerca de") ||
+                mensaje.includes("metrocentro") ||
+                mensaje.includes("zona 4") ||
+                mensaje.includes("villa nueva");
+        }
+
         function isDeliveryAddressRequest(mensaje) {
             return mensaje.includes("entregas a domicilio") ||
+                mensaje.includes("entregan a domicilio") ||
                 mensaje.includes("pedido a domicilio") ||
                 mensaje.includes("pedidos a domicilio") ||
                 mensaje.includes("hacen pedidos a domicilio") ||
+                mensaje.includes("hacen entregas a domicilio") ||
+                mensaje.includes("llevan a domicilio") ||
                 mensaje.includes("servicio a domicilio") ||
+                mensaje.includes("servicio delivery") ||
                 mensaje.includes("domicilio") ||
                 mensaje.includes("delivery") ||
-                mensaje.includes("envio");
+                mensaje.includes("envio") ||
+                mensaje.includes("envian") ||
+                mensaje.includes("enviar");
         }
 
         function scheduleDeliveryMapModal() {
@@ -225,9 +323,6 @@ window.addEventListener('DOMContentLoaded', function() {
                 mensaje.includes("descuento") ||
                 mensaje.includes("horario") ||
                 mensaje.includes("abiertos") ||
-                mensaje.includes("ubicacion") ||
-                mensaje.includes("ubicados") ||
-                mensaje.includes("donde estan") ||
                 mensaje.includes("pago") ||
                 mensaje.includes("pagar") ||
                 mensaje.includes("tarjeta") ||
@@ -237,7 +332,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
         function getBlockedDuringOrderMessage() {
             return "Ahora mismo estamos registrando tu pedido. Para consultar otras opciones como promociones, horario, pagos o domicilio, primero escribe \"cancelar\" para salir del pedido.\n\n" +
-                "Si deseas continuar, escribe productos del menu, \"ver pedido\", \"confirmar\" o \"cancelar\".";
+                "Si deseas continuar, escribe productos del menu, \"ver pedido\", \"confirmar\", \"quitar\", \"eliminar\" o \"borrar\".";
         }
 
         function resetOrder() {
@@ -264,7 +359,9 @@ window.addEventListener('DOMContentLoaded', function() {
                 "Ejemplos:\n" +
                 "- 2 queso, 1 horchata\n" +
                 "- 3 mixtas, 1 jamaica\n" +
-                "- 2 loroco con queso, 1 agua pura";
+                "- 2 loroco con queso, 1 agua pura\n\n" +
+                "Si luego quieres quitar algo, usa \"quitar\", \"eliminar\" o \"borrar\" seguido del producto.\n" +
+                "Ejemplo: \"quitar 1 queso\" o \"eliminar horchata\".";
         }
 
         function findCatalogItem(fragment) {
@@ -327,6 +424,56 @@ window.addEventListener('DOMContentLoaded', function() {
             return items;
         }
 
+        function parseOrderRemovals(userInput) {
+            const normalizedInput = normalizeMessage(userInput).replace(/\by\b/g, ",");
+
+            if (!/\b(quitar|eliminar|borrar)\b/.test(normalizedInput)) {
+                return [];
+            }
+
+            const fragments = normalizedInput
+                .split(",")
+                .map(function(fragment) {
+                    return fragment.trim();
+                })
+                .filter(function(fragment) {
+                    return fragment !== "";
+                });
+
+            const items = [];
+
+            fragments.forEach(function(fragment) {
+                const cleanedFragment = fragment
+                    .replace(/\b(quitar|eliminar|borrar)\b/g, "")
+                    .replace(/\bde\b/g, " ")
+                    .replace(/\bdel\b/g, " ")
+                    .replace(/\bel\b/g, " ")
+                    .replace(/\bla\b/g, " ")
+                    .replace(/\blos\b/g, " ")
+                    .replace(/\blas\b/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                if (cleanedFragment === "") {
+                    return;
+                }
+
+                const product = findCatalogItem(cleanedFragment);
+
+                if (product) {
+                    const quantityMatch = cleanedFragment.match(/\b(\d+)\b/);
+                    const quantity = quantityMatch ? parseInt(quantityMatch[1], 10) : null;
+
+                    items.push({
+                        name: product.name,
+                        quantity: quantity
+                    });
+                }
+            });
+
+            return items;
+        }
+
         function addItemsToOrder(items) {
             items.forEach(function(item) {
                 const existingItem = currentOrder.items.find(function(orderItem) {
@@ -340,6 +487,44 @@ window.addEventListener('DOMContentLoaded', function() {
                     currentOrder.items.push(item);
                 }
             });
+        }
+
+        function removeItemsFromOrder(items) {
+            const removedItems = [];
+            const missingItems = [];
+
+            items.forEach(function(item) {
+                const existingItem = currentOrder.items.find(function(orderItem) {
+                    return orderItem.name === item.name;
+                });
+
+                if (!existingItem) {
+                    missingItems.push(item.name);
+                    return;
+                }
+
+                const quantityToRemove = item.quantity === null
+                    ? existingItem.quantity
+                    : Math.min(item.quantity, existingItem.quantity);
+
+                existingItem.quantity -= quantityToRemove;
+
+                if (existingItem.quantity <= 0) {
+                    currentOrder.items = currentOrder.items.filter(function(orderItem) {
+                        return orderItem.name !== item.name;
+                    });
+                }
+
+                removedItems.push({
+                    name: item.name,
+                    quantity: quantityToRemove
+                });
+            });
+
+            return {
+                removedItems: removedItems,
+                missingItems: missingItems
+            };
         }
 
         function getOrderTotal(order) {
@@ -368,24 +553,41 @@ window.addEventListener('DOMContentLoaded', function() {
                 return "- " + item.quantity + " x " + item.name + ": Q" + (item.price * item.quantity);
             });
 
+            const deliveryCost = targetOrder.deliveryEstimate ? targetOrder.deliveryEstimate.cost : 0;
+            const hasDelivery = deliveryCost > 0;
+            const totalWithDelivery = getOrderTotal(targetOrder) + deliveryCost;
+
             return "Pedido actual:\n" +
                 itemLines.join("\n") +
-                "\n\nTotal: Q" + getOrderTotal(targetOrder);
+                (hasDelivery ? "\n\nCosto de envio: Q" + deliveryCost : "") +
+                "\n\nTotal: Q" + totalWithDelivery;
         }
 
         function openCustomerModal() {
+            const customerModal = document.getElementById('customer-modal');
+            const customerName = document.getElementById('customer-name');
+            if (!customerModal || !customerName) {
+                return;
+            }
             clearCustomerFormError();
-            document.getElementById('customer-modal').classList.remove('hidden');
-            document.getElementById('customer-name').focus();
+            customerModal.classList.remove('hidden');
+            customerName.focus();
         }
 
         function closeCustomerModal() {
+            const customerModal = document.getElementById('customer-modal');
+            if (!customerModal) {
+                return;
+            }
             clearCustomerFormError();
-            document.getElementById('customer-modal').classList.add('hidden');
+            customerModal.classList.add('hidden');
         }
 
         function showCustomerFormError(message) {
             const errorElement = document.getElementById('customer-form-error');
+            if (!errorElement) {
+                return;
+            }
 
             errorElement.textContent = message;
             errorElement.classList.remove('hidden');
@@ -393,24 +595,39 @@ window.addEventListener('DOMContentLoaded', function() {
 
         function clearCustomerFormError() {
             const errorElement = document.getElementById('customer-form-error');
+            if (!errorElement) {
+                return;
+            }
 
             errorElement.textContent = "";
             errorElement.classList.add('hidden');
         }
 
         function openDeliveryMapModal() {
+            const deliveryMapModal = document.getElementById('delivery-map-modal');
+            const deliveryAddressInput = document.getElementById('delivery-address-input');
+            if (!deliveryMapModal || !deliveryAddressInput) {
+                return;
+            }
             clearDeliveryMapError();
-            document.getElementById('delivery-map-modal').classList.remove('hidden');
-            document.getElementById('delivery-address-input').focus();
+            deliveryMapModal.classList.remove('hidden');
+            deliveryAddressInput.focus();
         }
 
         function closeDeliveryMapModal() {
+            const deliveryMapModal = document.getElementById('delivery-map-modal');
+            if (!deliveryMapModal) {
+                return;
+            }
             clearDeliveryMapError();
-            document.getElementById('delivery-map-modal').classList.add('hidden');
+            deliveryMapModal.classList.add('hidden');
         }
 
         function showDeliveryMapError(message) {
             const errorElement = document.getElementById('delivery-map-error');
+            if (!errorElement) {
+                return;
+            }
 
             errorElement.textContent = message;
             errorElement.classList.remove('hidden');
@@ -418,6 +635,9 @@ window.addEventListener('DOMContentLoaded', function() {
 
         function clearDeliveryMapError() {
             const errorElement = document.getElementById('delivery-map-error');
+            if (!errorElement) {
+                return;
+            }
 
             errorElement.textContent = "";
             errorElement.classList.add('hidden');
@@ -425,6 +645,10 @@ window.addEventListener('DOMContentLoaded', function() {
 
         function submitDeliveryMapSearch() {
             const addressInput = document.getElementById('delivery-address-input');
+            const deliveryMapForm = document.getElementById('delivery-map-form');
+            if (!addressInput || !deliveryMapForm) {
+                return;
+            }
             const address = addressInput.value.trim();
 
             if (address === "") {
@@ -435,7 +659,7 @@ window.addEventListener('DOMContentLoaded', function() {
             const deliveryEstimate = getRandomDeliveryEstimate();
 
             closeDeliveryMapModal();
-            document.getElementById('delivery-map-form').reset();
+            deliveryMapForm.reset();
             displayMessage("Direccion para entrega:\n" + address, "user");
             displayDeliveryEstimate(address, deliveryEstimate);
         }
@@ -467,12 +691,30 @@ window.addEventListener('DOMContentLoaded', function() {
         }
 
         function openCardModal() {
-            document.getElementById('card-modal').classList.remove('hidden');
-            document.getElementById('cardInput').focus();
+            const cardModal = document.getElementById('card-modal');
+            const cardInput = document.getElementById('cardInput');
+            if (!cardModal || !cardInput) {
+                return;
+            }
+            if (typeof window.resetCardPreviewOrientation === 'function') {
+                window.resetCardPreviewOrientation();
+            }
+            cardModal.classList.remove('hidden');
+            cardInput.focus();
         }
 
         function closeCardModal() {
-            document.getElementById('card-modal').classList.add('hidden');
+            const cardModal = document.getElementById('card-modal');
+            if (!cardModal) {
+                return;
+            }
+            cardModal.classList.add('hidden');
+            if (typeof window.resetCardPreviewOrientation === 'function') {
+                window.resetCardPreviewOrientation();
+            }
+            if (typeof window.hideCardReminder === 'function') {
+                window.hideCardReminder();
+            }
         }
 
         function formatCardNumber(number) {
@@ -493,38 +735,35 @@ window.addEventListener('DOMContentLoaded', function() {
         }
 
         function detectBank(number) {
-            const bin = number.slice(0, 6);
+            const firstDigit = number.charAt(0);
 
-            if (/^5224/.test(bin)) {
-                return 'Banamex';
+            if (firstDigit === '4') {
+                return 'Banco Industrial S.A.';
             }
-            else if (/^4111/.test(bin)) {
-                return 'Banorte';
-            }
-            else if (/^5237/.test(bin)) {
-                return 'BBVA';
-            }
-            else if (/^5289/.test(bin)) {
-                return 'Santander';
+            else if (firstDigit === '5') {
+                return 'BAC Credomatic';
             }
 
             return 'Banco Desconocido';
         }
 
         function updateCardColor(cardType) {
-            const cardFront = document.getElementById('cardFront');
-            const cardBack = document.getElementById('cardBack');
-            let color = '#333333';
+            const cardDisplay = document.getElementById('cardDisplay');
+            if (!cardDisplay) {
+                return;
+            }
+
+            cardDisplay.classList.remove('neutral', 'visa', 'mastercard');
 
             if (cardType === 'Visa') {
-                color = '#1d4ed8';
+                cardDisplay.classList.add('visa');
             }
             else if (cardType === 'Mastercard') {
-                color = '#b91c1c';
+                cardDisplay.classList.add('mastercard');
             }
-
-            cardFront.style.backgroundColor = color;
-            cardBack.style.backgroundColor = color;
+            else {
+                cardDisplay.classList.add('neutral');
+            }
         }
 
         function setupCardPreview() {
@@ -532,6 +771,7 @@ window.addEventListener('DOMContentLoaded', function() {
             const cardHolderInput = document.getElementById('cardHolderInput');
             const expiryInput = document.getElementById('expiryInput');
             const cvvInput = document.getElementById('cvvInput');
+            const cardDisplay = document.getElementById('cardDisplay');
             const cardNumberDisplay = document.getElementById('cardNumber');
             const cardTypeDisplay = document.getElementById('cardType');
             const cardHolderDisplay = document.getElementById('cardHolder');
@@ -539,9 +779,94 @@ window.addEventListener('DOMContentLoaded', function() {
             const bankNameDisplay = document.getElementById('bankName');
             const cvvDisplay = document.getElementById('cvvDisplay');
 
+            if (!cardDisplay || !cardInput || !cardHolderInput || !expiryInput || !cvvInput ||
+                !cardNumberDisplay || !cardTypeDisplay || !cardHolderDisplay ||
+                !expiryDateDisplay || !bankNameDisplay || !cvvDisplay) {
+                return;
+            }
+
+            let spinState = {
+                rotation: 0,
+                dragging: false,
+                startX: 0,
+                startRotation: 0
+            };
+            let idleResetTimer = null;
+
+            function applyCardRotation(rotation) {
+                spinState.rotation = rotation;
+                cardDisplay.style.setProperty('--card-spin', rotation + 'deg');
+            }
+
+            function resetCardRotation() {
+                if (idleResetTimer) {
+                    clearTimeout(idleResetTimer);
+                    idleResetTimer = null;
+                }
+                spinState.rotation = 0;
+                cardDisplay.style.setProperty('--card-spin', '0deg');
+                cardDisplay.style.setProperty('--card-tilt', '0deg');
+            }
+
+            function scheduleIdleReset() {
+                if (idleResetTimer) {
+                    clearTimeout(idleResetTimer);
+                }
+
+                idleResetTimer = setTimeout(function() {
+                    resetCardRotation();
+                }, 5000);
+            }
+
+            cardDisplay.addEventListener('pointerdown', function(event) {
+                spinState.dragging = true;
+                spinState.startX = event.clientX;
+                spinState.startRotation = spinState.rotation;
+                cardDisplay.classList.add('is-dragging');
+                cardDisplay.setPointerCapture(event.pointerId);
+                if (idleResetTimer) {
+                    clearTimeout(idleResetTimer);
+                    idleResetTimer = null;
+                }
+            });
+
+            cardDisplay.addEventListener('pointermove', function(event) {
+                if (!spinState.dragging) {
+                    return;
+                }
+
+                const deltaX = event.clientX - spinState.startX;
+                const nextRotation = (spinState.startRotation + (deltaX * 0.8)) % 360;
+                const normalizedRotation = nextRotation < 0 ? nextRotation + 360 : nextRotation;
+
+                applyCardRotation(normalizedRotation);
+                scheduleIdleReset();
+            });
+
+            function endDrag(event) {
+                if (!spinState.dragging) {
+                    return;
+                }
+
+                spinState.dragging = false;
+                cardDisplay.classList.remove('is-dragging');
+
+                if (cardDisplay.hasPointerCapture(event.pointerId)) {
+                    cardDisplay.releasePointerCapture(event.pointerId);
+                }
+
+                scheduleIdleReset();
+            }
+
+            cardDisplay.addEventListener('pointerup', endDrag);
+            cardDisplay.addEventListener('pointercancel', endDrag);
+
             [cardInput, cardHolderInput, expiryInput].forEach(function(input) {
                 input.addEventListener('focus', function() {
-                    document.getElementById('cardDisplay').classList.remove('flipped');
+                    const cardDisplay = document.getElementById('cardDisplay');
+                    if (cardDisplay) {
+                        cardDisplay.classList.remove('flipped');
+                    }
                 });
             });
 
@@ -577,7 +902,10 @@ window.addEventListener('DOMContentLoaded', function() {
             });
 
             cvvInput.addEventListener('focus', function() {
-                document.getElementById('cardDisplay').classList.add('flipped');
+                const cardDisplay = document.getElementById('cardDisplay');
+                if (cardDisplay) {
+                    cardDisplay.classList.add('flipped');
+                }
             });
 
             cvvInput.addEventListener('input', function() {
@@ -585,18 +913,39 @@ window.addEventListener('DOMContentLoaded', function() {
                 cvvInput.value = cvv;
                 cvvDisplay.textContent = cvv || '###';
             });
+
+            window.resetCardPreviewOrientation = resetCardRotation;
         }
 
         function resetCardForm() {
-            document.getElementById('card-form').reset();
-            document.getElementById('cardNumber').textContent = '#### #### #### ####';
-            document.getElementById('cardType').textContent = 'Visa/Mastercard';
-            document.getElementById('cardHolder').textContent = 'Nombre del Titular';
-            document.getElementById('expiryDate').textContent = 'MM/AA';
-            document.getElementById('cvvDisplay').textContent = '###';
-            document.getElementById('bankName').textContent = 'Banco';
-            document.getElementById('cardDisplay').classList.remove('flipped');
+            const cardForm = document.getElementById('card-form');
+            const cardNumber = document.getElementById('cardNumber');
+            const cardType = document.getElementById('cardType');
+            const cardHolder = document.getElementById('cardHolder');
+            const expiryDate = document.getElementById('expiryDate');
+            const cvvDisplay = document.getElementById('cvvDisplay');
+            const bankName = document.getElementById('bankName');
+            const cardDisplay = document.getElementById('cardDisplay');
+
+            if (!cardForm || !cardNumber || !cardType || !cardHolder || !expiryDate || !cvvDisplay || !bankName || !cardDisplay) {
+                return;
+            }
+
+            cardForm.reset();
+            cardNumber.textContent = '#### #### #### ####';
+            cardType.textContent = 'Visa/Mastercard';
+            cardHolder.textContent = 'Nombre del Titular';
+            expiryDate.textContent = 'MM/AA';
+            cvvDisplay.textContent = '###';
+            bankName.textContent = 'Banco';
+            cardDisplay.classList.remove('flipped');
+            cardDisplay.classList.remove('visa', 'mastercard');
+            cardDisplay.classList.add('neutral');
+            resetCardRotation();
             updateCardColor('Desconocida');
+            if (typeof window.hideCardReminder === 'function') {
+                window.hideCardReminder();
+            }
         }
 
         function disablePaymentButtons() {
@@ -606,12 +955,24 @@ window.addEventListener('DOMContentLoaded', function() {
         }
 
         function submitCardPayment() {
-            const cardNumber = document.getElementById('cardInput').value.replace(/\D/g, '');
-            const cardHolder = document.getElementById('cardHolderInput').value.trim();
-            const expiry = document.getElementById('expiryInput').value.trim();
-            const cvv = document.getElementById('cvvInput').value.replace(/\D/g, '');
+            const cardInput = document.getElementById('cardInput');
+            const cardHolderInput = document.getElementById('cardHolderInput');
+            const expiryInput = document.getElementById('expiryInput');
+            const cvvInput = document.getElementById('cvvInput');
+
+            if (!cardInput || !cardHolderInput || !expiryInput || !cvvInput) {
+                return;
+            }
+
+            const cardNumber = cardInput.value.replace(/\D/g, '');
+            const cardHolder = cardHolderInput.value.trim();
+            const expiry = expiryInput.value.trim();
+            const cvv = cvvInput.value.replace(/\D/g, '');
 
             if (cardNumber.length !== 16 || cardHolder === "" || !/^\d{2}\/\d{2}$/.test(expiry) || cvv.length !== 3) {
+                if (typeof window.showCardReminder === 'function') {
+                    window.showCardReminder();
+                }
                 displayMessage("Por favor ingresa numero de tarjeta de 16 digitos, titular, fecha en formato MM/AA y CVV de 3 digitos.", "bot");
                 return;
             }
@@ -620,9 +981,9 @@ window.addEventListener('DOMContentLoaded', function() {
             const bankName = detectBank(cardNumber);
             const lastDigits = cardNumber.slice(-4);
 
-            closeCardModal();
-            resetCardForm();
-            disablePaymentButtons();
+            if (typeof window.hideCardReminder === 'function') {
+                window.hideCardReminder();
+            }
 
             displayMessage("Pago con tarjeta registrado.\n\n" +
                 "- Tipo: " + cardType + "\n" +
@@ -631,12 +992,23 @@ window.addEventListener('DOMContentLoaded', function() {
                 "- Terminacion: **** " + lastDigits, "bot");
 
             displayDeliveryMessage("Tarjeta de debito/credito");
+            closeCardModal();
+            resetCardForm();
+            disablePaymentButtons();
         }
 
         function submitCustomerData() {
-            const name = document.getElementById('customer-name').value.trim();
-            const phone = document.getElementById('customer-phone').value.trim();
-            const address = document.getElementById('customer-address').value.trim();
+            const nameInput = document.getElementById('customer-name');
+            const phoneInput = document.getElementById('customer-phone');
+            const addressInput = document.getElementById('customer-address');
+
+            if (!nameInput || !phoneInput || !addressInput) {
+                return;
+            }
+
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const address = addressInput.value.trim();
             const phoneDigits = phone.replace(/\D/g, "");
 
             if (name === "" || phoneDigits.length < 8 || address === "") {
@@ -668,7 +1040,10 @@ window.addEventListener('DOMContentLoaded', function() {
             };
 
             closeCustomerModal();
-            document.getElementById('customer-form').reset();
+            const customerForm = document.getElementById('customer-form');
+            if (customerForm) {
+                customerForm.reset();
+            }
 
             displayMessage("Datos registrados:\n" +
                 "- Nombre: " + name + "\n" +
@@ -809,6 +1184,35 @@ window.addEventListener('DOMContentLoaded', function() {
             }
 
             if (currentOrder.step === "items") {
+                const removalItems = parseOrderRemovals(userInput);
+
+                if (removalItems.length > 0) {
+                    const removalResult = removeItemsFromOrder(removalItems);
+                    let removalResponse = "";
+
+                    if (removalResult.removedItems.length > 0) {
+                        removalResponse += "Pedido actualizado:\n" +
+                            removalResult.removedItems.map(function(item) {
+                                return "- Se quito " + item.quantity + " x " + item.name;
+                            }).join("\n");
+                    }
+
+                    if (removalResult.missingItems.length > 0) {
+                        removalResponse += (removalResponse ? "\n\n" : "") +
+                            "No encontre en tu pedido:\n" +
+                            removalResult.missingItems.map(function(name) {
+                                return "- " + name;
+                            }).join("\n");
+                    }
+
+                    if (!removalResponse) {
+                        return "No pude identificar el producto que deseas eliminar. Prueba con \"quitar 1 queso\" o \"borrar horchata\".";
+                    }
+
+                    removalResponse += "\n\n" + getOrderSummary() + "\n\nConfirmar pedido? Escribe \"confirmar\" para continuar o \"cancelar\" para cancelar.";
+                    return removalResponse;
+                }
+
                 if (mensaje.includes("confirmar") || mensaje === "si" || mensaje.includes("finalizar") || mensaje === "listo") {
                     if (currentOrder.items.length === 0) {
                         return "Aun no has agregado productos. Escribe algo como: 2 queso, 1 horchata.";
@@ -864,6 +1268,31 @@ window.addEventListener('DOMContentLoaded', function() {
 
             return saludos.some(function(saludo) {
                 return mensaje.includes(saludo);
+            });
+        }
+
+        function getFarewellMessage() {
+            return "Gracias por visitar MacPUPUSAS. Que tu camino siga ligero, tu dia con buen sabor y que el antojo te traiga de vuelta pronto. Aqui te esperamos con pupusas calientitas, curtido fresco y salsita de la casa.";
+        }
+
+        function isFarewell(mensaje) {
+            const despedidas = [
+                "adios",
+                "hasta luego",
+                "hasta pronto",
+                "hasta manana",
+                "nos vemos",
+                "bye",
+                "chao",
+                "chau",
+                "me voy",
+                "ya me voy",
+                "me retiro",
+                "me despido"
+            ];
+
+            return despedidas.some(function(despedida) {
+                return mensaje.includes(despedida);
             });
         }
 
@@ -942,7 +1371,14 @@ window.addEventListener('DOMContentLoaded', function() {
             const mensaje = normalizeMessage(userInput);
             let botResponse = "";
 
-            if (currentOrder.active) {
+            if (isFarewell(mensaje)) {
+                resetOrder();
+                closeCustomerModal();
+                closeDeliveryMapModal();
+                closeCardModal();
+                botResponse = getFarewellMessage();
+            }
+            else if (currentOrder.active) {
                 botResponse = handleOrderFlow(userInput);
             }
             else if (isOrderStart(mensaje)) {
@@ -992,7 +1428,7 @@ window.addEventListener('DOMContentLoaded', function() {
                     "- Pago movil o billetera digital, segun disponibilidad\n\n" +
                     "Cuando confirmes tu pedido, te mostraremos las opciones disponibles para finalizarlo.";
             }
-            else if (mensaje.includes("ubicados") || mensaje.includes("ubicacion") || mensaje.includes("donde estan")) {
+            else if (isLocationQuestion(mensaje)) {
                 botResponse = "Nos encuentras en el local 110, segundo nivel de Metrocentro, zona 4 de Villa Nueva. Ven con hambre y buen animo, que en MacPUPUSAS estamos listos para recibirte con pupusas calientitas y una sonrisa.";
             }
             else if (mensaje.includes("acompanamientos") || mensaje.includes("salsas") || mensaje.includes("curtido") || mensaje.includes("aderezos")) {

@@ -7,64 +7,214 @@
   <link rel="stylesheet" href="chatboot.css">
   <script src="chatboot.js" defer></script>
 </head>
-
 <body>
-  <!-- Barra superior de la pagina -->
   <header class="topbar">
-    <!-- Logo o nombre de la marca -->
     <div class="logo">
       <p>MC</p>
       <h1>PUPUSAS</h1>
     </div>
 
-    <!-- Menu de navegacion -->
-    <nav class="nav">
+    <nav class="nav" aria-label="Navegacion principal">
       <ul>
         <li><a href="index.html">Inicio</a></li>
         <li><a href="index.html#quienes-somos">Quienes Somos?</a></li>
         <li><a href="#consulta">Consulta Aqui</a></li>
+        <li><a href="index.html#menu">Menu</a></li>
       </ul>
     </nav>
   </header>
 
-  <!-- Contenido principal -->
-  <main class="page">
-    <!-- Columna izquierda: espacio para el chatbot -->
+  <main class="page" id="chatbox-section">
     <section class="chat-card">
-      <div class="chat-box" id="chat-box">
-        <!-- Aqui ira el historial de mensajes del usuario y del bot -->
+      <div class="chat-header">
+        <div class="chat-header-copy">
+          <span class="eyebrow">Asistencia virtual</span>
+          <h2>Consulta aqui</h2>
+          <p>Pregunta por el menu, promociones, pedidos, entregas y pagos.</p>
+        </div>
+
+        <div class="chat-header-mascot">
+          <img src="imagenes/chatbot-pupusin-transparent.png" alt="MC Pupusin">
+        </div>
+      </div>
+
+      <div class="chat-box" id="chat-box" aria-label="Historial de mensajes">
+        <div class="welcome-card">
+          <strong>MC Pupusin</strong>
+          <p>Hola, estoy listo para ayudarte con tu pedido. Escribe algo como "menu", "pedido" o "promociones".</p>
+        </div>
+      </div>
+
+      <div class="quick-questions" aria-label="Preguntas rapidas">
+        <button type="button" data-question="menu">Menu</button>
+        <button type="button" data-question="promociones">Promociones</button>
+        <button type="button" data-question="pedido">Pedido</button>
+        <button type="button" data-question="bebidas">Bebidas</button>
       </div>
 
       <form class="chat-form" id="chat-form">
-        <input type="text" id="user-input" placeholder="Escribe aqui...">
+        <input type="text" id="user-input" placeholder="Escribe aqui..." autocomplete="off">
         <button type="submit" id="send-btn">Enviar</button>
       </form>
     </section>
 
-    <!-- Columna derecha: decoracion y promociones -->
     <aside class="promo-column">
       <section class="title-banner">
-        <h2>CONSULTA AQUI!</h2>
+        <h2>CONSULTA AQUI</h2>
       </section>
 
       <section class="promo-label">
-        <h3>PROMOCIONES!</h3>
+        <h3>PROMOCIONES</h3>
       </section>
 
-      <section class="image-placeholder wide-placeholder">
-        <img src="mcpupusas-2.png" alt="....">
+      <section class="ad-card">
+        <img src="imagenes/publicidad1.png" alt="Publicidad de MC Pupusas">
       </section>
 
-      <section class="image-row">
-        <div class="image-placeholder mascot-placeholder">
-          <img src="imagenes/nuestra mascota.png" alt="....">
-        </div>
-
-        <div class="image-placeholder square-placeholder">
-          <img src="mcpupusas-1.png" alt="...">
+      <section class="mascot-card">
+        <img src="imagenes/chatbot-pupusin-transparent.png" alt="MC Pupusin">
+        <div>
+          <strong>MC Pupusin</strong>
+          <p>Tu asistente para ver el menu, confirmar pedidos y revisar pagos.</p>
         </div>
       </section>
     </aside>
   </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>MC Pupusas</strong>
+        <p>Siguenos en nuestras redes sociales.</p>
+      </div>
+
+      <div class="social-links" aria-label="Redes sociales">
+        <a href="#">Facebook</a>
+        <a href="#">Instagram</a>
+        <a href="#">TikTok</a>
+      </div>
+
+      <p class="copyright">© 2026 MC Pupusas. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <section id="modals" class="modal-layer" aria-hidden="true">
+    <section class="modal hidden" id="customer-modal" aria-labelledby="customer-modal-title">
+      <div class="modal-card">
+        <div class="modal-head">
+          <span class="eyebrow">Pedido</span>
+          <h2 id="customer-modal-title">Ingresa tus datos</h2>
+          <p>Necesitamos tu nombre, telefono y direccion para continuar con el pedido.</p>
+        </div>
+
+        <form id="customer-form" class="modal-form">
+          <label>
+            Nombre completo
+            <input id="customer-name" type="text" autocomplete="name" placeholder="Tu nombre completo">
+          </label>
+          <label>
+            Telefono
+            <input id="customer-phone" type="tel" autocomplete="tel" placeholder="Tu numero de telefono">
+          </label>
+          <label>
+            Direccion
+            <textarea id="customer-address" rows="3" placeholder="Tu direccion completa"></textarea>
+          </label>
+          <p id="customer-form-error" class="form-error hidden" role="alert"></p>
+          <div class="modal-actions">
+            <button type="submit" class="primary">Continuar</button>
+            <button type="button" id="cancel-customer-modal" class="secondary">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="modal hidden" id="delivery-map-modal" aria-labelledby="delivery-map-title">
+      <div class="modal-card">
+        <div class="modal-head">
+          <span class="eyebrow">Envio</span>
+          <h2 id="delivery-map-title">Busca tu direccion</h2>
+          <p>Escribe tu direccion para calcular el costo y el tiempo de entrega.</p>
+        </div>
+
+        <form id="delivery-map-form" class="modal-form">
+          <label>
+            Direccion
+            <textarea id="delivery-address-input" rows="3" placeholder="Escribe tu direccion"></textarea>
+          </label>
+          <p id="delivery-map-error" class="form-error hidden" role="alert"></p>
+          <div class="modal-actions">
+            <button type="submit" class="primary">Calcular</button>
+            <button type="button" id="cancel-delivery-map-modal" class="secondary">Cerrar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="modal hidden" id="card-modal" aria-labelledby="card-modal-title">
+      <div class="modal-card modal-card-wide">
+        <div class="modal-head">
+          <span class="eyebrow">Pago</span>
+          <h2 id="card-modal-title">Pago con tarjeta</h2>
+          <p>Completa los datos de tu tarjeta para registrar el pago.</p>
+        </div>
+
+        <div id="card-reminder" class="card-reminder hidden" role="status" aria-live="polite">
+          Faltan completar los datos de la tarjeta.
+        </div>
+
+        <div class="card-preview" id="cardDisplay">
+          <div class="card-face card-front" id="cardFront">
+            <span class="card-chip"></span>
+            <strong id="cardType">Visa/Mastercard</strong>
+            <div class="card-number" id="cardNumber">#### #### #### ####</div>
+            <div class="card-meta">
+              <span>
+                Titular
+                <b id="cardHolder">Nombre del Titular</b>
+              </span>
+              <span>
+                Vence
+                <b id="expiryDate">MM/AA</b>
+              </span>
+            </div>
+            <small id="bankName">Banco</small>
+          </div>
+          <div class="card-face card-back" id="cardBack">
+            <div class="card-stripe"></div>
+            <div class="card-cvv-line">
+              <span>CVV</span>
+              <b id="cvvDisplay">###</b>
+            </div>
+          </div>
+        </div>
+
+        <form id="card-form" class="modal-form">
+          <label>
+            Numero de tarjeta
+            <input id="cardInput" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="#### #### #### ####">
+          </label>
+          <label>
+            Titular
+            <input id="cardHolderInput" type="text" autocomplete="cc-name" placeholder="Nombre como aparece en la tarjeta">
+          </label>
+          <div class="inline-grid">
+            <label>
+              Vencimiento
+              <input id="expiryInput" type="text" inputmode="numeric" placeholder="MM/AA">
+            </label>
+            <label>
+              CVV
+              <input id="cvvInput" type="text" inputmode="numeric" placeholder="###">
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="submit" class="primary">Pagar</button>
+            <button type="button" id="cancel-card-modal" class="secondary">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </section>
 </body>
 </html>
