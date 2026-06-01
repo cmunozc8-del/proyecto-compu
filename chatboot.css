@@ -143,7 +143,7 @@ a {
   grid-template-columns: 1fr auto;
   gap: 10px;
   align-items: center;
-  padding: 8px 12px 8px;
+  padding: 4px 10px 4px;
   background:
     linear-gradient(135deg, rgba(220, 63, 63, 0.1), rgba(255, 255, 255, 0.9)),
     #fff;
@@ -153,9 +153,9 @@ a {
 .chat-header-copy .eyebrow,
 .modal-head .eyebrow {
   display: inline-block;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   font-family: "Aileron";
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -165,7 +165,7 @@ a {
 .chat-header-copy h2,
 .modal-head h2 {
   font-family: "Harmoni";
-  font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+  font-size: clamp(0.95rem, 1.35vw, 1.2rem);
   line-height: 0.92;
   text-transform: uppercase;
   color: #111;
@@ -173,14 +173,14 @@ a {
 
 .chat-header-copy p,
 .modal-head p {
-  margin-top: 4px;
+  margin-top: 2px;
   max-width: 54ch;
-  font-size: 0.76rem;
-  line-height: 1.5;
+  font-size: 0.68rem;
+  line-height: 1.35;
 }
 
 .chat-header-mascot {
-  width: clamp(52px, 5vw, 72px);
+  width: clamp(42px, 3.8vw, 54px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -201,7 +201,7 @@ a {
 .chat-box {
   flex: 1;
   min-height: 0;
-  padding: 20px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;

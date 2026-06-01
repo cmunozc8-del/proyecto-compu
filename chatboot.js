@@ -154,7 +154,8 @@ window.addEventListener('DOMContentLoaded', function() {
 
         const BOT_RESPONSE_DELAY_MS = 850;
         const DELIVERY_MODAL_AFTER_RESPONSE_MS = 3000;
-        const DELIVERY_INTRO_MESSAGE = "Asi es, hacemos pedidos a domicilio, solo brindanos tu direccion y te dare el tiempo estimado y el precio de envio";
+        const DELIVERY_INTRO_MESSAGE = "Si, hacemos pedidos a domicilio. Solo brindanos tu direccion y te dare el tiempo estimado y el precio de envio.";
+        const DELIVERY_COST_MESSAGE = "El costo de envio varia segun tu ubicacion, pero puedes realizar un costo brindandonos tu direccion.";
         const NO_ORDER_DELIVERY_TIME_MESSAGE = "no tenemos ningun pedido registrado, brindame el numero de pedido o realiza uno para poder brindarte el aproximado de entrega segun tu direccion";
 
         function getWelcomeMessage() {
@@ -247,7 +248,7 @@ window.addEventListener('DOMContentLoaded', function() {
         }
 
         function isOrderStart(mensaje) {
-            return mensaje === "pedido" ||
+            return /\bpedido\b/.test(mensaje) ||
                 mensaje.includes("hacer pedido") ||
                 mensaje.includes("realizar pedido") ||
                 mensaje.includes("registrar pedido") ||
@@ -266,10 +267,32 @@ window.addEventListener('DOMContentLoaded', function() {
                 mensaje.includes("aproximado de entrega");
         }
 
+        function isDeliveryCostQuestion(mensaje) {
+            return /\b(costo|precio|valor)\b.*\b(envio|entrega|delivery)\b/.test(mensaje) ||
+                /\b(cuanto|cuanto cuesta|cuanto vale|cuanto sale)\b.*\b(envio|entrega|delivery)\b/.test(mensaje) ||
+                /\b(envio|entrega|delivery)\b.*\b(costo|precio|valor)\b/.test(mensaje) ||
+                /\b(envio|entrega|delivery)\b.*\b(cuanto|cuanto cuesta|cuanto vale|cuanto sale)\b/.test(mensaje);
+        }
+
         function isLocationQuestion(mensaje) {
             return mensaje.includes("ubicacion") ||
+                mensaje.includes("ubikacion") ||
+                mensaje.includes("ubicasion") ||
                 mensaje.includes("ubicacion exacta") ||
                 mensaje.includes("ubicados") ||
+                mensaje.includes("ubican") ||
+                mensaje.includes("ubikan") ||
+                mensaje.includes("me ubican") ||
+                mensaje.includes("me ubica") ||
+                mensaje.includes("me ubikan") ||
+                mensaje.includes("ubiquen") ||
+                mensaje.includes("ubicame") ||
+                mensaje.includes("ubicarme") ||
+                mensaje.includes("donde me ubican") ||
+                mensaje.includes("donde me ubica") ||
+                mensaje.includes("donde me ubikan") ||
+                mensaje.includes("donde los ubico") ||
+                mensaje.includes("donde ubico") ||
                 mensaje.includes("donde estan") ||
                 mensaje.includes("donde esta") ||
                 mensaje.includes("donde quedan") ||
@@ -303,6 +326,17 @@ window.addEventListener('DOMContentLoaded', function() {
                 mensaje.includes("servicio delivery") ||
                 mensaje.includes("domicilio") ||
                 mensaje.includes("delivery") ||
+                mensaje.includes("precio del envio") ||
+                mensaje.includes("precio de envio") ||
+                mensaje.includes("precio de entrega") ||
+                mensaje.includes("costo del envio") ||
+                mensaje.includes("costo de entrega") ||
+                mensaje.includes("cuanto cuesta el envio") ||
+                mensaje.includes("cuanto cuesta el delivery") ||
+                mensaje.includes("cuanto vale el envio") ||
+                mensaje.includes("cuanto vale la entrega") ||
+                mensaje.includes("cuanto sale el envio") ||
+                mensaje.includes("cuanto sale la entrega") ||
                 mensaje.includes("envio") ||
                 mensaje.includes("envian") ||
                 mensaje.includes("enviar");
@@ -542,7 +576,7 @@ window.addEventListener('DOMContentLoaded', function() {
             return getOrderTotal(targetOrder) + deliveryCost;
         }
 
-        function getOrderSummary(order) {
+        function getOrderSummary(order, includeDeliveryCost) {
             const targetOrder = order || currentOrder;
 
             if (targetOrder.items.length === 0) {
@@ -553,14 +587,22 @@ window.addEventListener('DOMContentLoaded', function() {
                 return "- " + item.quantity + " x " + item.name + ": Q" + (item.price * item.quantity);
             });
 
+            const subtotal = getOrderTotal(targetOrder);
             const deliveryCost = targetOrder.deliveryEstimate ? targetOrder.deliveryEstimate.cost : 0;
-            const hasDelivery = deliveryCost > 0;
-            const totalWithDelivery = getOrderTotal(targetOrder) + deliveryCost;
+            const totalWithDelivery = subtotal + deliveryCost;
+            const showDeliveryCost = includeDeliveryCost && deliveryCost > 0;
+
+            if (showDeliveryCost) {
+                return "Pedido actual:\n" +
+                    itemLines.join("\n") +
+                    "\n\nSubtotal: Q" + subtotal +
+                    "\nEnvio: Q" + deliveryCost +
+                    "\nTotal final: Q" + totalWithDelivery;
+            }
 
             return "Pedido actual:\n" +
                 itemLines.join("\n") +
-                (hasDelivery ? "\n\nCosto de envio: Q" + deliveryCost : "") +
-                "\n\nTotal: Q" + totalWithDelivery;
+                "\n\nTotal del pedido: Q" + subtotal;
         }
 
         function openCustomerModal() {
@@ -581,6 +623,10 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             clearCustomerFormError();
             customerModal.classList.add('hidden');
+            const customerForm = document.getElementById('customer-form');
+            if (customerForm) {
+                customerForm.reset();
+            }
         }
 
         function showCustomerFormError(message) {
@@ -680,13 +726,20 @@ window.addEventListener('DOMContentLoaded', function() {
                 return NO_ORDER_DELIVERY_TIME_MESSAGE;
             }
 
+            const subtotal = getOrderTotal(completedOrder);
+            const deliveryCost = completedOrder.deliveryEstimate ? completedOrder.deliveryEstimate.cost : 0;
+            const totalFinal = subtotal + deliveryCost;
+
             return "Tu pedido ya esta registrado.\n\n" +
                 "Numero de pedido: " + completedOrder.orderNumber + "\n" +
+                "NIT: " + (completedOrder.customer.nit || "N/D") + "\n" +
                 "Estado: " + completedOrder.status + "\n" +
                 "Metodo de pago: " + completedOrder.paymentMethod + "\n" +
                 "Repartidor asignado: " + completedOrder.deliveryPerson + "\n" +
                 "Direccion: " + completedOrder.customer.address + "\n" +
-                "Costo de envio: Q" + completedOrder.deliveryEstimate.cost + "\n" +
+                "Subtotal: Q" + subtotal + "\n" +
+                "Costo de envio: Q" + deliveryCost + "\n" +
+                "Total final: Q" + totalFinal + "\n" +
                 "Tiempo estimado de llegada: " + completedOrder.deliveryEstimate.minutes + " minutos";
         }
 
@@ -1001,18 +1054,23 @@ window.addEventListener('DOMContentLoaded', function() {
             const nameInput = document.getElementById('customer-name');
             const phoneInput = document.getElementById('customer-phone');
             const addressInput = document.getElementById('customer-address');
+            const nitInput = document.getElementById('customer-nit');
 
-            if (!nameInput || !phoneInput || !addressInput) {
+            if (!nameInput || !phoneInput || !addressInput || !nitInput) {
                 return;
             }
 
             const name = nameInput.value.trim();
             const phone = phoneInput.value.trim();
             const address = addressInput.value.trim();
+            const nit = nitInput.value.trim();
             const phoneDigits = phone.replace(/\D/g, "");
+            const nitDigits = nit.replace(/\D/g, "");
 
-            if (name === "" || phoneDigits.length < 8 || address === "") {
-                showCustomerFormError("Por favor completa nombre, telefono valido y direccion.");
+            nitInput.value = nitDigits;
+
+            if (name === "" || phoneDigits.length < 8 || address === "" || nitDigits.length < 4) {
+                showCustomerFormError("Por favor completa nombre, telefono valido, direccion y un NIT de minimo 4 digitos. Con 4 o mas digitos si puedes continuar.");
                 return;
             }
 
@@ -1034,7 +1092,8 @@ window.addEventListener('DOMContentLoaded', function() {
                 customer: {
                     name: name,
                     phone: phone,
-                    address: address
+                    address: address,
+                    nit: nitDigits
                 },
                 deliveryEstimate: deliveryEstimate
             };
@@ -1049,6 +1108,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 "- Nombre: " + name + "\n" +
                 "- Telefono: " + phone + "\n" +
                 "- Direccion: " + address + "\n" +
+                "- NIT: " + nitDigits + "\n" +
                 "- Costo de envio: Q" + deliveryEstimate.cost + "\n" +
                 "- Tiempo estimado de llegada: " + deliveryEstimate.minutes + " minutos\n\n" +
                 getOrderSummary(completedOrder), "bot");
@@ -1135,7 +1195,7 @@ window.addEventListener('DOMContentLoaded', function() {
             completedOrder.paymentMethod = paymentMethod;
             completedOrder.status = paymentMethod === "Transferencia bancaria"
                 ? "Pendiente de comprobante de transferencia"
-                : "Confirmado";
+                : "En camino";
 
             const paymentInstructions = paymentMethod === "Transferencia bancaria"
                 ? "\n\n" + getBankTransferInstructions(completedOrder)
@@ -1149,11 +1209,9 @@ window.addEventListener('DOMContentLoaded', function() {
                 "Estado: " + completedOrder.status + "\n" +
                 "Metodo de pago: " + completedOrder.paymentMethod + "\n" +
                 "Repartidor asignado: " + completedOrder.deliveryPerson + "\n" +
-                "Costo de envio: Q" + completedOrder.deliveryEstimate.cost + "\n" +
                 "Tiempo estimado de llegada: " + completedOrder.deliveryEstimate.minutes + " minutos\n\n" +
                 "Resumen:\n" +
-                getOrderSummary(completedOrder) + "\n\n" +
-                "Total con envio: Q" + getOrderGrandTotal(completedOrder) +
+                getOrderSummary(completedOrder, true) +
                 paymentInstructions + "\n\n" +
                 "Gracias por tu compra. Estamos para servirte.", "bot");
         }
@@ -1255,12 +1313,18 @@ window.addEventListener('DOMContentLoaded', function() {
         function isGreeting(mensaje) {
             const saludos = [
                 "hola",
+                "ola",
+                "holaa",
+                "wola",
+                "wolas",
                 "holi",
                 "buenos dias",
                 "buen dia",
                 "buenas tardes",
                 "buenas noches",
                 "buenas",
+                "hey",
+                "hello",
                 "que tal",
                 "que onda",
                 "saludos"
@@ -1277,14 +1341,19 @@ window.addEventListener('DOMContentLoaded', function() {
 
         function isFarewell(mensaje) {
             const despedidas = [
+                "gracias",
+                "muchas gracias",
+                "graciass",
                 "adios",
                 "hasta luego",
                 "hasta pronto",
                 "hasta manana",
                 "nos vemos",
                 "bye",
+                "bye bye",
                 "chao",
                 "chau",
+                "hasta la vista",
                 "me voy",
                 "ya me voy",
                 "me retiro",
@@ -1405,6 +1474,10 @@ window.addEventListener('DOMContentLoaded', function() {
             else if (isDeliveryTimeQuestion(mensaje)) {
                 botResponse = getConfirmedOrderStatusMessage();
             }
+            else if (isDeliveryCostQuestion(mensaje)) {
+                scheduleDeliveryMapModal();
+                botResponse = DELIVERY_COST_MESSAGE;
+            }
             else if (mensaje.includes("cobran") || isDeliveryAddressRequest(mensaje)) {
                 scheduleDeliveryMapModal();
 
@@ -1429,7 +1502,7 @@ window.addEventListener('DOMContentLoaded', function() {
                     "Cuando confirmes tu pedido, te mostraremos las opciones disponibles para finalizarlo.";
             }
             else if (isLocationQuestion(mensaje)) {
-                botResponse = "Nos encuentras en el local 110, segundo nivel de Metrocentro, zona 4 de Villa Nueva. Ven con hambre y buen animo, que en MacPUPUSAS estamos listos para recibirte con pupusas calientitas y una sonrisa.";
+                botResponse = "Nos ubicas en el local 110, segundo nivel de Metrocentro, zona 4 de Villa Nueva. Esa es nuestra direccion comercial. Ven con hambre y buen animo, que en MacPUPUSAS estamos listos para recibirte con pupusas calientitas y una sonrisa.";
             }
             else if (mensaje.includes("acompanamientos") || mensaje.includes("salsas") || mensaje.includes("curtido") || mensaje.includes("aderezos")) {
                 botResponse = "Nuestras pupusas van acompanadas con curtido fresco y salsita roja de la casa, como debe ser. Tambien puedes pedir extras como curtido adicional, salsa picante, crema, frijolitos, aguacate o platanitos fritos para completar tu antojo.";
